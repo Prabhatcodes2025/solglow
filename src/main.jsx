@@ -13,9 +13,9 @@ const contact = {
 };
 
 const social = [
-  ["Facebook", "F", "https://www.facebook.com/solglowpowers"],
-  ["Instagram", "IG", "https://www.instagram.com/solglowpower"],
-  ["YouTube", "YT", "https://www.youtube.com/channel/UCFusZ4dQhMJQFsH0nxsiLoQ"]
+  ["Facebook", "facebook", "https://www.facebook.com/solglowpowers"],
+  ["Instagram", "instagram", "https://www.instagram.com/solglowpower"],
+  ["YouTube", "youtube", "https://www.youtube.com/channel/UCFusZ4dQhMJQFsH0nxsiLoQ"]
 ];
 
 const serviceData = [
@@ -136,7 +136,6 @@ const serviceData = [
 const pages = [
   { path: "/", label: "Home" },
   { path: "/about", label: "About Us" },
-  ...serviceData.map((service) => ({ path: service.path, label: service.nav })),
   { path: "/projects-gallery", label: "Projects" },
   { path: "/why-solar", label: "Why Solar" },
   { path: "/contact", label: "Contact Us" }
@@ -145,6 +144,53 @@ const pages = [
 const process = ["Consultation", "Site Survey", "System Design", "Installation", "Support & Maintenance"];
 const why = ["Professional Solar Consultation", "Customized System Design", "Quality Products", "Reliable Installation", "Long-Term Support", "Energy Saving Focus"];
 const benefits = ["Reduce electricity bills", "Clean renewable energy", "Low maintenance", "Long-term savings", "Better energy independence", "Eco-friendly future"];
+const proofStats = [["25+", "Team members"], ["180 kW", "IOCL Parippalli solar project"], ["800+", "Projects delivered"], ["3", "Kerala branch regions"]];
+
+const pageFaqs = {
+  home: [
+    ["What does Solglow help with?", "Solglow supports rooftop solar, on-grid and off-grid plants, solar water heaters, street lights, backup systems and batteries for homes, businesses and industries."],
+    ["How does a consultation begin?", "The team reviews your location, usage pattern, roof or site condition and savings goal before suggesting a practical clean-energy path."],
+    ["Does Solglow provide support after installation?", "Yes. The brand position is built around consultation, design, installation and long-term support."]
+  ],
+  about: [
+    ["Where is Solglow based?", "Solglow Power Solutions Pvt Ltd operates from Kochi with service presence across Kerala, including Trivandrum, Thrissur and Kozhikode regions."],
+    ["What makes Solglow different?", "The company combines practical engineering, quality installation, operations and maintenance support, and a premium customer experience."],
+    ["Does Solglow handle large projects?", "Yes. The reference portfolio includes landmark work such as a 180 kW solar project at IOCL Parippalli."]
+  ],
+  projects: [
+    ["Can real project photos be added later?", "Yes. The current premium gallery is structured so verified residential, commercial and industrial project photos can be added without changing the design system."],
+    ["What project details should be shown?", "Capacity, location type, category, installation context and customer goal are the most useful details for future case studies."],
+    ["Which categories matter most?", "Residential rooftops, commercial buildings, industrial rooftops, on-grid plants, off-grid systems, water heating and street lighting."]
+  ],
+  whySolar: [
+    ["Is solar only for high electricity users?", "No. Solar can support homes, shops, offices, institutions and industrial users when the system is sized around actual consumption."],
+    ["Is maintenance difficult?", "Quality solar systems are generally low maintenance, especially when installed with clean access, correct components and periodic support."],
+    ["Can solar work with backup?", "Yes. Solar can be planned with inverter and battery strategies where energy continuity is important."]
+  ],
+  contact: [
+    ["What should I share before a callback?", "Share your location, approximate electricity bill, roof or site type, preferred service and whether savings or backup is the priority."],
+    ["Can I contact through WhatsApp?", "Yes. The WhatsApp CTA connects directly to Solglow at +91 9847055764."],
+    ["Does the enquiry form have captcha validation?", "Yes. The form uses a random math captcha that refreshes after submission and whenever the popup opens."]
+  ]
+};
+
+function Icon({ name }) {
+  const icons = {
+    facebook: <path d="M18 2h-4a7 7 0 0 0-7 7v4H3v6h4v13h6V19h5l1-6h-6V9a1 1 0 0 1 1-1h4V2Z" />,
+    instagram: <><rect x="4" y="4" width="24" height="24" rx="7" /><circle cx="16" cy="16" r="5" fill="none" stroke="currentColor" strokeWidth="3" /><circle cx="23" cy="9" r="1.6" /></>,
+    youtube: <><path d="M29 10.5a4 4 0 0 0-2.8-2.8C23.7 7 16 7 16 7s-7.7 0-10.2.7A4 4 0 0 0 3 10.5 41 41 0 0 0 2.3 16 41 41 0 0 0 3 21.5a4 4 0 0 0 2.8 2.8C8.3 25 16 25 16 25s7.7 0 10.2-.7a4 4 0 0 0 2.8-2.8 41 41 0 0 0 .7-5.5 41 41 0 0 0-.7-5.5Z" /><path d="m13 20 8-4-8-4v8Z" fill="#07111d" /></>,
+    whatsapp: <path d="M16 3C9.4 3 4 8.2 4 14.7c0 2.2.6 4.2 1.7 6L4 29l8.5-1.7c1.1.3 2.3.5 3.5.5 6.6 0 12-5.2 12-11.7S22.6 3 16 3Zm6.8 17c-.3.8-1.7 1.5-2.4 1.6-.6.1-1.4.2-4.6-1.1-3.9-1.6-6.4-5.4-6.6-5.7-.2-.2-1.6-2.1-1.6-4 0-1.9 1-2.8 1.4-3.2.3-.4.8-.5 1.1-.5h.8c.3 0 .6 0 .9.7.3.8 1.1 2.7 1.2 2.9.1.2.1.5 0 .8-.2.3-.3.5-.6.8-.2.2-.5.5-.2 1 .3.5 1.2 2 2.6 3.2 1.8 1.6 3.3 2.1 3.8 2.3.5.2.8.2 1.1-.1.3-.4 1.2-1.4 1.5-1.8.3-.5.7-.4 1.1-.2.4.1 2.7 1.3 3.2 1.5.5.2.8.4.9.6.1.1.1.8-.2 1.6Z" />,
+    menu: <><span /><span /><span /></>
+  };
+  if (name === "menu") return <span className="hamburger" aria-hidden="true">{icons.menu}</span>;
+  return <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">{icons[name]}</svg>;
+}
+
+function generateCaptcha() {
+  const a = Math.floor(Math.random() * 8) + 2;
+  const b = Math.floor(Math.random() * 9) + 1;
+  return { question: `${a} + ${b} = ?`, answer: String(a + b) };
+}
 
 function navigate(path) {
   window.history.pushState({}, "", path);
@@ -226,21 +272,41 @@ function Magnetic({ children, className = "", onClick, type = "button" }) {
 
 function Header({ openPopup }) {
   const [open, setOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
   const [path, setPath] = useState(window.location.pathname);
   useEffect(() => {
     const sync = () => setPath(window.location.pathname);
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, []);
+  const closeNav = () => {
+    setOpen(false);
+    setServicesOpen(false);
+  };
+  const serviceActive = serviceData.some((service) => service.path === path);
   return (
     <header className="navbar">
-      <Link to="/" className="brand" onClick={() => setOpen(false)}>
+      <Link to="/" className="brand" onClick={closeNav}>
         <img src="/images/solglow-mark.png" alt="Solglow logo" />
         <span><strong>Solglow</strong><small>Power Solutions Pvt Ltd</small></span>
       </Link>
-      <button className="menu-btn" onClick={() => setOpen(!open)} aria-label="Toggle navigation">Menu</button>
+      <button className={`menu-btn ${open ? "menu-btn--open" : ""}`} onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>
+        <Icon name="menu" />
+      </button>
       <nav className={open ? "nav-links nav-links--open" : "nav-links"}>
-        {pages.map((page) => <Link key={page.path} to={page.path} className={path === page.path ? "active" : ""} onClick={() => setOpen(false)}>{page.label}</Link>)}
+        <Link to="/" className={path === "/" ? "active" : ""} onClick={closeNav}>Home</Link>
+        <Link to="/about" className={path === "/about" ? "active" : ""} onClick={closeNav}>About Us</Link>
+        <div className={`nav-service ${servicesOpen ? "nav-service--open" : ""}`}>
+          <button type="button" className={serviceActive ? "service-trigger active" : "service-trigger"} onClick={() => setServicesOpen(!servicesOpen)} aria-expanded={servicesOpen}>
+            Services <span>▾</span>
+          </button>
+          <div className="service-menu">
+            {serviceData.map((service) => <Link key={service.path} to={service.path} className={path === service.path ? "active" : ""} onClick={closeNav}>{service.nav}</Link>)}
+          </div>
+        </div>
+        <Link to="/projects-gallery" className={path === "/projects-gallery" ? "active" : ""} onClick={closeNav}>Projects</Link>
+        <Link to="/why-solar" className={path === "/why-solar" ? "active" : ""} onClick={closeNav}>Why Solar</Link>
+        <Link to="/contact" className={path === "/contact" ? "active" : ""} onClick={closeNav}>Contact Us</Link>
       </nav>
       <Magnetic className="btn-primary nav-cta" onClick={openPopup}>Get Free Consultation</Magnetic>
     </header>
@@ -248,18 +314,24 @@ function Header({ openPopup }) {
 }
 
 function EnquiryForm({ compact = false }) {
-  const [captcha] = useState({ question: "7 + 4 = ?", answer: "11" });
+  const [captcha, setCaptcha] = useState(generateCaptcha);
   const [form, setForm] = useState({ name: "", phone: "", email: "", service: "", message: "", captcha: "" });
   const [state, setState] = useState({ error: "", success: "" });
   const update = (key, value) => setForm({ ...form, [key]: value });
+  const refreshCaptcha = () => {
+    setCaptcha(generateCaptcha());
+    setForm((current) => ({ ...current, captcha: "" }));
+  };
   function submit(event) {
     event.preventDefault();
     if (form.captcha.trim() !== captcha.answer) {
       setState({ error: "Please solve the math captcha before submitting.", success: "" });
+      refreshCaptcha();
       return;
     }
     setState({ error: "", success: "Thank you. Solglow will contact you shortly." });
     setForm({ name: "", phone: "", email: "", service: "", message: "", captcha: "" });
+    setCaptcha(generateCaptcha());
   }
   return (
     <form className={compact ? "lead-form lead-form--compact" : "lead-form"} onSubmit={submit}>
@@ -271,7 +343,8 @@ function EnquiryForm({ compact = false }) {
         {serviceData.map((service) => <option key={service.title}>{service.title}</option>)}
       </select></label>
       <label className="wide">Message<textarea rows={compact ? 3 : 4} required value={form.message} onChange={(e) => update("message", e.target.value)} /></label>
-      <label>{captcha.question}<input required inputMode="numeric" value={form.captcha} onChange={(e) => update("captcha", e.target.value)} /></label>
+      <label className="captcha-field"><span>{captcha.question}</span><input required inputMode="numeric" value={form.captcha} onChange={(e) => update("captcha", e.target.value)} /></label>
+      <button className="captcha-refresh" type="button" onClick={refreshCaptcha}>Refresh Captcha</button>
       {state.error && <p className="form-error">{state.error}</p>}
       {state.success && <p className="form-success">{state.success}</p>}
       <Magnetic className="btn-primary wide" type="submit">Submit Enquiry</Magnetic>
@@ -393,10 +466,12 @@ function Home({ openPopup }) {
         </div>
       </Section>
       <ServiceShowcase />
+      <ProofBand />
       <WhyCards />
       <BenefitBand />
       <Process />
       <GalleryPreview />
+      <FAQ items={pageFaqs.home} />
       <CTA openPopup={openPopup} />
     </>
   );
@@ -442,11 +517,31 @@ function BenefitBand() {
   );
 }
 
+function ProofBand() {
+  return (
+    <Section eyebrow="Proven delivery" title="A Kerala solar team with measurable project credibility.">
+      <div className="proof-grid">
+        {proofStats.map(([value, label]) => <article className="stat-card tilt proof-card" key={label}><strong>{value}</strong><span>{label}</span></article>)}
+      </div>
+    </Section>
+  );
+}
+
 function Process() {
   return (
     <Section eyebrow="Process" title="A clear path from enquiry to dependable solar support.">
       <div className="process">
         {process.map((step, index) => <article className="process-step tilt" key={step}><span>{index + 1}</span><h3>{step}</h3><p>{["Understand your need", "Inspect roof and site", "Plan system capacity", "Execute clean install", "Maintain performance"][index]}</p></article>)}
+      </div>
+    </Section>
+  );
+}
+
+function FAQ({ items }) {
+  return (
+    <Section eyebrow="FAQ" title="Answers that help customers move forward with confidence.">
+      <div className="faq-grid">
+        {items.map(([question, answer]) => <article className="faq-card tilt" key={question}><h3>{question}</h3><p>{answer}</p></article>)}
       </div>
     </Section>
   );
@@ -479,14 +574,17 @@ function About({ openPopup }) {
           <div>
             <p className="lead">Solglow delivers residential, commercial and industrial solar rooftop solutions, on-grid and off-grid solar power plants, solar water heaters, solar street lights, backup solutions and batteries.</p>
             <p>The company is positioned around practical consultation, customized system design, quality product selection, reliable installation and long-term support. The goal is simple: help customers make a confident clean-energy investment.</p>
+            <p>With a dedicated 25+ member team, 800+ projects delivered and landmark work such as the 180 kW IOCL Parippalli solar project, Solglow brings both technical discipline and regional service reach to Kerala customers.</p>
           </div>
           <div className="glass-list">
             {why.map((item) => <span key={item}>{item}</span>)}
           </div>
         </div>
       </Section>
+      <ProofBand />
       <Process />
       <ServiceShowcase />
+      <FAQ items={pageFaqs.about} />
       <CTA openPopup={openPopup} title="Want a solar partner that understands both design and performance?" />
     </>
   );
@@ -518,10 +616,15 @@ function ServicePage({ service, openPopup }) {
       </Section>
       <Section eyebrow="Benefits" title="What this solution gives you.">
         <div className="feature-grid">
-          {service.benefits.map((item, index) => <article className="feature-card tilt" key={item}><span>0{index + 1}</span><h3>{item}</h3><p>Planned with Solglow's premium consultation, design and support approach.</p></article>)}
+          {service.benefits.map((item, index) => <article className="feature-card tilt" key={item}><span>0{index + 1}</span><h3>{item}</h3><p>{service.title} is planned around practical site conditions, quality components, safe execution and long-term service support.</p></article>)}
         </div>
       </Section>
       <Process />
+      <FAQ items={[
+        [`Who is ${service.title.toLowerCase()} best for?`, `${service.title} is best for ${service.applications.join(", ").toLowerCase()} where the customer wants a practical, reliable clean-energy solution.`],
+        ["How does Solglow size the system?", "The team reviews usage pattern, site condition, available space, support expectations and future expansion before recommending a configuration."],
+        ["What happens after installation?", "Solglow keeps the focus on handover clarity, performance guidance, support and maintenance so the system remains dependable."]
+      ]} />
       <ContactStrip openPopup={openPopup} />
       <CTA openPopup={openPopup} title={`Ready to discuss ${service.title.toLowerCase()}?`} text="Share your site details and Solglow will help you understand the right system, next steps and callback path." />
     </>
@@ -546,6 +649,7 @@ function WhySolar({ openPopup }) {
         </div>
       </Section>
       <Process />
+      <FAQ items={pageFaqs.whySolar} />
       <CTA openPopup={openPopup} title="Make your energy decision cleaner, smarter and more predictable." />
     </>
   );
@@ -556,6 +660,7 @@ function Projects({ openPopup }) {
     <>
       <Hero eyebrow="Projects / Gallery" title="A premium gallery system ready for real Solglow installations." text="Use these polished placeholders now, then replace them with verified residential, commercial and industrial project images as the portfolio grows." variant="inner" />
       <GalleryPreview />
+      <ProofBand />
       <Section eyebrow="Portfolio categories" title="Organized for the way customers evaluate solar partners.">
         <div className="feature-grid">
           {[
@@ -569,6 +674,7 @@ function Projects({ openPopup }) {
         </div>
       </Section>
       <Process />
+      <FAQ items={pageFaqs.projects} />
       <CTA openPopup={openPopup} title="Have a project site ready for solar assessment?" />
     </>
   );
@@ -610,6 +716,7 @@ function ContactPage({ openPopup }) {
         </div>
       </Section>
       <Process />
+      <FAQ items={pageFaqs.contact} />
       <CTA openPopup={openPopup} title="Prefer a quick callback instead?" />
     </>
   );
@@ -626,7 +733,7 @@ function ContactCard() {
       <a href={`mailto:${contact.email}`}>Email: {contact.email}</a>
       <a href="https://www.solglowpowers.com">Website: {contact.website}</a>
       <div className="director"><strong>{contact.director}</strong><span>Director</span><a href={`tel:+91${contact.mobile}`}>Mobile: {contact.mobile}</a></div>
-      <div className="socials">{social.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}>{icon}</a>)}</div>
+      <div className="socials">{social.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div>
     </article>
   );
 }
@@ -637,12 +744,12 @@ function Footer({ openPopup }) {
       <div className="footer-brand">
         <img src="/images/solglow-mark.png" alt="Solglow logo" />
         <strong>Solglow Power Solutions Pvt Ltd</strong>
-        <p>Premium renewable energy solutions for homes, businesses and industries across Kerala.</p>
-        <Magnetic className="btn-primary" onClick={openPopup}>WhatsApp / Enquire</Magnetic>
+        <p>Premium renewable energy solutions for homes, businesses and industries across Kerala, backed by consultation, quality installation and O&M support.</p>
+        <Magnetic className="btn-primary footer-whatsapp" onClick={openPopup}><Icon name="whatsapp" /> WhatsApp / Enquire</Magnetic>
       </div>
       <div><h3>Quick Links</h3>{pages.filter((page) => ["/", "/about", "/projects-gallery", "/why-solar", "/contact"].includes(page.path)).map((page) => <Link key={page.path} to={page.path}>{page.label}</Link>)}</div>
       <div><h3>Services</h3>{serviceData.map((service) => <Link key={service.path} to={service.path}>{service.title}</Link>)}</div>
-      <div><h3>Contact</h3><p>{contact.address}</p><a href={`tel:+91${contact.mobile}`}>{contact.mobile}</a><a href={`mailto:${contact.email}`}>{contact.email}</a><div className="socials">{social.map(([name, icon, url]) => <a key={name} href={url}>{icon}</a>)}</div></div>
+      <div><h3>Contact</h3><p>{contact.address}</p><a href={`tel:+91${contact.mobile}`}>{contact.mobile}</a><a href={`mailto:${contact.email}`}>{contact.email}</a><div className="socials">{social.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div></div>
       <div className="developer-credit">
         <span>Copyright 2026 Solglow Power Solutions Pvt Ltd. All rights reserved.</span>
         <span>Designed and Developed by <a href="https://growwithclickmyze.com/">Clickmyze</a></span>
@@ -665,7 +772,7 @@ function Router({ openPopup }) {
     return () => clearTimeout(timer);
   }, [path]);
   useEffect(() => {
-    const label = pages.find((page) => page.path === path)?.label || "Home";
+    const label = pages.find((page) => page.path === path)?.label || serviceData.find((service) => service.path === path)?.nav || "Home";
     document.title = `${label} | Solglow Power Solutions Pvt Ltd`;
     document.querySelector('meta[name="description"]')?.setAttribute("content", `${label} by Solglow Power Solutions Pvt Ltd in Kochi, Kerala. Premium solar rooftop, power plant, backup and clean energy solutions.`);
   }, [path]);
@@ -730,7 +837,7 @@ function App() {
       <main><Router openPopup={openPopup} /></main>
       <Footer openPopup={openPopup} />
       <Popup visible={popup} close={() => setPopup(false)} />
-      <a className="whatsapp" href="https://wa.me/919847055764" aria-label="Chat on WhatsApp">WA</a>
+      <a className="whatsapp" href="https://wa.me/919847055764" aria-label="Chat on WhatsApp"><Icon name="whatsapp" /><span>Chat on WhatsApp</span></a>
       <a className="mobile-call" href={`tel:+91${contact.mobile}`}>Call Now</a>
     </>
   );
