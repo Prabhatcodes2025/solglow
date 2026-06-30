@@ -870,7 +870,6 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
   .nav-service:hover .service-menu, .nav-service:focus-within .service-menu {
     transform: none;
   }
-  .nav-links--open .service-menu,
   .nav-service--open .service-menu {
     display: grid;
     max-height: 520px;

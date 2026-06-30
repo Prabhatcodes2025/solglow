@@ -193,9 +193,10 @@ function generateCaptcha() {
 }
 
 function navigate(path) {
+  window.scrollTo({ top: 0, behavior: "auto" });
   window.history.pushState({}, "", path);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.dispatchEvent(new Event("popstate"));
+  requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
 }
 
 function Link({ to, children, className = "", onClick }) {
@@ -568,7 +569,7 @@ function GalleryPreview() {
 function About({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="About Solglow" title="A Kerala-based solar company with a global, premium service mindset." text="Solglow Power Solutions Pvt Ltd helps homes, businesses and industries reduce energy costs and move toward reliable sustainable power." variant="inner" />
+      <Hero eyebrow="About Solglow" title="A Kerala-based solar company with a global, premium service mindset." text="Solglow Power Solutions Pvt Ltd helps homes, businesses and industries reduce energy costs and move toward reliable sustainable power." image="/images/project-commercial.png" variant="inner" />
       <Section eyebrow="Who we are" title="A complete solar solutions partner from Kochi.">
         <div className="editorial-layout">
           <div>
@@ -634,7 +635,7 @@ function ServicePage({ service, openPopup }) {
 function WhySolar({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="Why solar" title="Solar is no longer optional for smart energy users." text="It reduces power bills, improves energy independence, supports sustainability and creates a better long-term energy position for homes and businesses." variant="inner" />
+      <Hero eyebrow="Why solar" title="Solar is no longer optional for smart energy users." text="It reduces power bills, improves energy independence, supports sustainability and creates a better long-term energy position for homes and businesses." image="/images/service-on-grid.png" variant="inner" />
       <BenefitBand />
       <Section eyebrow="Financial and environmental value" title="Solar combines practical savings with a cleaner future.">
         <div className="feature-grid">
@@ -658,7 +659,7 @@ function WhySolar({ openPopup }) {
 function Projects({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="Projects / Gallery" title="A premium gallery system ready for real Solglow installations." text="Use these polished placeholders now, then replace them with verified residential, commercial and industrial project images as the portfolio grows." variant="inner" />
+      <Hero eyebrow="Projects / Gallery" title="A premium gallery system ready for real Solglow installations." text="Use these polished placeholders now, then replace them with verified residential, commercial and industrial project images as the portfolio grows." image="/images/project-residential.png" variant="inner" />
       <GalleryPreview />
       <ProofBand />
       <Section eyebrow="Portfolio categories" title="Organized for the way customers evaluate solar partners.">
@@ -696,7 +697,7 @@ function ContactStrip({ openPopup }) {
 function ContactPage({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="Contact us" title="Talk to Solglow about your solar project." text="Get professional guidance for rooftop solar, solar plants, water heaters, street lights, backup solutions and batteries." variant="inner" />
+      <Hero eyebrow="Contact us" title="Talk to Solglow about your solar project." text="Get professional guidance for rooftop solar, solar plants, water heaters, street lights, backup solutions and batteries." image="/images/service-water-heater.png" variant="inner" />
       <Section eyebrow="Before you call" title="A clearer enquiry helps Solglow recommend the right clean-energy path.">
         <div className="feature-grid">
           {[
@@ -788,15 +789,41 @@ function Router({ openPopup }) {
 
 function App() {
   const [popup, setPopup] = useState(false);
+  const openPopup = () => {
+    sessionStorage.setItem("solglowPopupShown", "true");
+    setPopup(true);
+  };
+  const closePopup = () => {
+    sessionStorage.setItem("solglowPopupShown", "true");
+    setPopup(false);
+  };
   useEffect(() => {
-    const timer = setTimeout(() => setPopup(true), 4000);
-    return () => clearTimeout(timer);
+    if (sessionStorage.getItem("solglowPopupShown") === "true") return undefined;
+    const show = () => {
+      if (sessionStorage.getItem("solglowPopupShown") === "true") return;
+      sessionStorage.setItem("solglowPopupShown", "true");
+      setPopup(true);
+    };
+    const timer = setTimeout(show, 15000);
+    const onScroll = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable > 0 && window.scrollY / scrollable >= 0.5) show();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-visible"));
     }, { threshold: 0.13 });
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    document.querySelectorAll(".reveal").forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) el.classList.add("is-visible");
+    });
     return () => observer.disconnect();
   });
   useEffect(() => {
@@ -827,8 +854,6 @@ function App() {
       window.removeEventListener("pointerout", leave);
     };
   }, []);
-
-  const openPopup = () => setPopup(true);
   return (
     <>
       <Preloader />
@@ -836,7 +861,7 @@ function App() {
       <Header openPopup={openPopup} />
       <main><Router openPopup={openPopup} /></main>
       <Footer openPopup={openPopup} />
-      <Popup visible={popup} close={() => setPopup(false)} />
+      <Popup visible={popup} close={closePopup} />
       <a className="whatsapp" href="https://wa.me/919847055764" aria-label="Chat on WhatsApp"><Icon name="whatsapp" /><span>Chat on WhatsApp</span></a>
       <a className="mobile-call" href={`tel:+91${contact.mobile}`}>Call Now</a>
     </>
