@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
+import { CMSProvider, useCMS, useDynamicServices } from "./CMSContext";
+import { submitEnquiry } from "./lib/cms";
+
+const AdminApp = lazy(() => import("./admin/AdminApp"));
 
 const contact = {
   company: "Solglow Power Solutions Pvt Ltd",
@@ -146,6 +150,15 @@ const why = ["Professional Solar Consultation", "Customized System Design", "Qua
 const benefits = ["Reduce electricity bills", "Clean renewable energy", "Low maintenance", "Long-term savings", "Better energy independence", "Eco-friendly future"];
 const proofStats = [["25+", "Team members"], ["180 kW", "IOCL Parippalli solar project"], ["800+", "Projects delivered"], ["3", "Kerala branch regions"]];
 
+function useContactInfo() {
+  const { content } = useCMS();
+  const dynamic = Object.fromEntries((content.contact || []).map((item) => [item.key, item.value]));
+  const dynamicSocial = content.social?.length
+    ? content.social.map((item) => [item.title || item.platform, item.icon || item.platform?.toLowerCase(), item.url])
+    : social;
+  return { details: { ...contact, ...dynamic }, socialLinks: dynamicSocial };
+}
+
 const pageFaqs = {
   home: [
     ["What does Solglow help with?", "Solglow supports rooftop solar, on-grid and off-grid plants, solar water heaters, street lights, backup systems and batteries for homes, businesses and industries."],
@@ -286,6 +299,7 @@ function Magnetic({ children, className = "", onClick, type = "button" }) {
 }
 
 function Header({ openPopup }) {
+  const services = useDynamicServices(serviceData);
   const [open, setOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [path, setPath] = useState(window.location.pathname);
@@ -311,7 +325,7 @@ function Header({ openPopup }) {
     setOpen(false);
     setServicesOpen(false);
   };
-  const serviceActive = serviceData.some((service) => service.path === path);
+  const serviceActive = services.some((service) => service.path === path);
   return (
     <header className="navbar">
       <Link to="/" className="brand" onClick={closeNav}>
@@ -329,7 +343,7 @@ function Header({ openPopup }) {
             Services <span>▾</span>
           </button>
           <div className="service-menu" id="services-menu">
-            {serviceData.map((service) => <Link key={service.path} to={service.path} className={path === service.path ? "active" : ""} onClick={closeNav}>{service.nav}</Link>)}
+            {services.map((service) => <Link key={service.path} to={service.path} className={path === service.path ? "active" : ""} onClick={closeNav}>{service.nav}</Link>)}
           </div>
         </div>
         <Link to="/projects-gallery" className={path === "/projects-gallery" ? "active" : ""} onClick={closeNav}>Projects</Link>
@@ -342,6 +356,7 @@ function Header({ openPopup }) {
 }
 
 function EnquiryForm({ compact = false }) {
+  const services = useDynamicServices(serviceData);
   const [captcha, setCaptcha] = useState(generateCaptcha);
   const [form, setForm] = useState({ name: "", phone: "", email: "", service: "", message: "", captcha: "" });
   const [state, setState] = useState({ error: "", success: "" });
@@ -350,16 +365,22 @@ function EnquiryForm({ compact = false }) {
     setCaptcha(generateCaptcha());
     setForm((current) => ({ ...current, captcha: "" }));
   };
-  function submit(event) {
+  async function submit(event) {
     event.preventDefault();
     if (form.captcha.trim() !== captcha.answer) {
       setState({ error: "Please solve the math captcha before submitting.", success: "" });
       refreshCaptcha();
       return;
     }
-    setState({ error: "", success: "Thank you. Solglow will contact you shortly." });
-    setForm({ name: "", phone: "", email: "", service: "", message: "", captcha: "" });
-    setCaptcha(generateCaptcha());
+    try {
+      await submitEnquiry({ name: form.name, phone: form.phone, email: form.email, service: form.service, message: form.message });
+      setState({ error: "", success: "Thank you. Your enquiry is securely saved and Solglow will contact you shortly." });
+      setForm({ name: "", phone: "", email: "", service: "", message: "", captcha: "" });
+    } catch (error) {
+      setState({ error: error.message, success: "" });
+    } finally {
+      setCaptcha(generateCaptcha());
+    }
   }
   return (
     <form className={compact ? "lead-form lead-form--compact" : "lead-form"} onSubmit={submit}>
@@ -368,7 +389,7 @@ function EnquiryForm({ compact = false }) {
       <label>Email<input required type="email" value={form.email} onChange={(e) => update("email", e.target.value)} /></label>
       <label>Service Required<select required value={form.service} onChange={(e) => update("service", e.target.value)}>
         <option value="">Select a service</option>
-        {serviceData.map((service) => <option key={service.title}>{service.title}</option>)}
+        {services.map((service) => <option key={service.title}>{service.title}</option>)}
       </select></label>
       <label className="wide">Message<textarea rows={compact ? 3 : 4} required value={form.message} onChange={(e) => update("message", e.target.value)} /></label>
       <label className="captcha-field"><span>{captcha.question}</span><input required inputMode="numeric" value={form.captcha} onChange={(e) => update("captcha", e.target.value)} /></label>
@@ -401,21 +422,24 @@ function Popup({ visible, close }) {
   );
 }
 
-function Hero({ eyebrow, title, text, image = "/images/solglow-hero.png", children, variant = "home" }) {
+function Hero({ eyebrow, title, text, image = "/images/solglow-hero.png", children, variant = "home", pageKey }) {
+  const { content } = useCMS();
+  const dynamic = content.heroes?.find((item) => item.page_key === pageKey);
   const revealClass = useRevealClass(`page-hero page-hero--${variant}`);
   return (
     <section className={revealClass}>
-      <img className="hero-img" src={image} alt="" />
+      <img className="hero-img" src={dynamic?.image_url || image} alt="" />
       <div className="hero-layer" />
       <div className="ray ray-one" />
       <div className="ray ray-two" />
       <div className="solar-grid" />
       <div className="particles" />
       <div className="hero-copy">
-        <span className="eyebrow">{eyebrow}</span>
-        <h1>{title}</h1>
-        <p>{text}</p>
+        <span className="eyebrow">{dynamic?.eyebrow || eyebrow}</span>
+        <h1>{dynamic?.title || title}</h1>
+        <p>{dynamic?.subtitle || text}</p>
         {children}
+        {!children && dynamic?.cta_label && <div className="hero-actions"><a className="btn btn-primary" href={dynamic.cta_url || "/contact"}>{dynamic.cta_label}</a></div>}
       </div>
     </section>
   );
@@ -469,6 +493,7 @@ function Home({ openPopup }) {
   return (
     <>
       <Hero
+        pageKey="home"
         eyebrow="Premium solar energy company in Kochi, Kerala"
         title="Powering Homes, Businesses & Industries with Smarter Solar Energy"
         text="Premium rooftop solar, solar plants, backup solutions, solar water heaters and clean energy systems designed for long-term performance."
@@ -496,23 +521,26 @@ function Home({ openPopup }) {
           </div>
         </div>
       </Section>
+      <DynamicSections moduleKey="homepage" />
       <ServiceShowcase />
       <ProofBand />
       <WhyCards />
       <BenefitBand />
       <Process />
       <GalleryPreview />
-      <FAQ items={pageFaqs.home} />
+      <Testimonials />
+      <FAQ pageKey="home" items={pageFaqs.home} />
       <CTA openPopup={openPopup} />
     </>
   );
 }
 
 function ServiceShowcase() {
+  const services = useDynamicServices(serviceData);
   return (
     <Section eyebrow="Solutions" title="Complete clean-energy systems for every type of power requirement.">
       <div className="service-showcase">
-        {serviceData.map((service) => (
+        {services.map((service) => (
           <Link className="service-card tilt" key={service.path} to={service.path}>
             <img src={service.image} alt={service.title} />
             <div className="service-card-body">
@@ -568,18 +596,22 @@ function Process() {
   );
 }
 
-function FAQ({ items }) {
+function FAQ({ items, pageKey }) {
+  const { content } = useCMS();
+  const dynamicItems = content.faq?.filter((item) => item.page_key === pageKey).map((item) => [item.title, item.answer]);
+  const resolvedItems = dynamicItems?.length ? dynamicItems : items;
   return (
     <Section eyebrow="FAQ" title="Answers that help customers move forward with confidence.">
       <div className="faq-grid">
-        {items.map(([question, answer]) => <article className="faq-card tilt" key={question}><h3>{question}</h3><p>{answer}</p></article>)}
+        {resolvedItems.map(([question, answer]) => <article className="faq-card tilt" key={question}><h3>{question}</h3><p>{answer}</p></article>)}
       </div>
     </Section>
   );
 }
 
 function GalleryPreview() {
-  const items = [
+  const { content } = useCMS();
+  const fallbackItems = [
     ["/images/project-residential.png", "Residential rooftop installations", "Premium home solar"],
     ["/images/service-on-grid.png", "Grid-connected solar plants", "On-grid systems"],
     ["/images/service-off-grid.png", "Solar plus battery systems", "Off-grid resilience"],
@@ -587,6 +619,11 @@ function GalleryPreview() {
     ["/images/service-street-lights.png", "Solar street lights", "Outdoor infrastructure"],
     ["/images/project-commercial.png", "Commercial and industrial arrays", "Business energy"]
   ];
+  const items = content.gallery?.length
+    ? content.gallery.map((item) => [item.image_url, item.alt_text || item.title, item.category || "Solglow project"])
+    : content.projects?.length
+      ? content.projects.map((item) => [item.image_url || "/images/project-residential.png", item.title, [item.capacity, item.location].filter(Boolean).join(" · ") || item.project_type])
+      : fallbackItems;
   return (
     <Section eyebrow="Projects / Gallery" title="Image-led proof points that make the brand feel credible and premium.">
       <div className="project-grid">
@@ -596,10 +633,28 @@ function GalleryPreview() {
   );
 }
 
+function DynamicSections({ moduleKey }) {
+  const { content } = useCMS();
+  const records = content[moduleKey] || [];
+  if (!records.length) return null;
+  return records.map((item) => <Section key={item.id} eyebrow={item.subtitle} title={item.title}>
+    <div className="editorial-layout cms-section">
+      <div><p className="lead">{item.body}</p>{item.cta_url && <a className="btn btn-ghost" href={item.cta_url}>{item.cta_label || "Learn more"}</a>}</div>
+      {item.image_url && <div className="visual-card tilt"><img src={item.image_url} alt={item.title} /></div>}
+    </div>
+  </Section>);
+}
+
+function Testimonials() {
+  const { content } = useCMS();
+  if (!content.testimonials?.length) return null;
+  return <Section eyebrow="Customer stories" title="Trusted outcomes, shared by Solglow customers."><div className="faq-grid testimonial-grid">{content.testimonials.map((item) => <article className="faq-card tilt" key={item.id}>{item.image_url && <img src={item.image_url} alt={item.customer_name} />}<div className="testimonial-stars">Rated {item.rating || 5}/5</div><p>"{item.quote}"</p><h3>{item.customer_name}</h3><span>{item.company}</span></article>)}</div></Section>;
+}
+
 function About({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="About Solglow" title="A Kerala-based solar company with a global, premium service mindset." text="Solglow Power Solutions Pvt Ltd helps homes, businesses and industries reduce energy costs and move toward reliable sustainable power." image="/images/project-commercial.png" variant="inner" />
+      <Hero pageKey="about" eyebrow="About Solglow" title="A Kerala-based solar company with a global, premium service mindset." text="Solglow Power Solutions Pvt Ltd helps homes, businesses and industries reduce energy costs and move toward reliable sustainable power." image="/images/project-commercial.png" variant="inner" />
       <Section eyebrow="Who we are" title="A complete solar solutions partner from Kochi.">
         <div className="editorial-layout">
           <div>
@@ -612,10 +667,12 @@ function About({ openPopup }) {
           </div>
         </div>
       </Section>
+      <DynamicSections moduleKey="about" />
       <ProofBand />
       <Process />
       <ServiceShowcase />
-      <FAQ items={pageFaqs.about} />
+      <Testimonials />
+      <FAQ pageKey="about" items={pageFaqs.about} />
       <CTA openPopup={openPopup} title="Want a solar partner that understands both design and performance?" />
     </>
   );
@@ -624,7 +681,7 @@ function About({ openPopup }) {
 function ServicePage({ service, openPopup }) {
   return (
     <>
-      <Hero eyebrow={service.eyebrow} title={service.title} text={service.summary} image={service.image} variant="service">
+      <Hero pageKey={service.path.slice(1)} eyebrow={service.eyebrow} title={service.title} text={service.summary} image={service.image} variant="service">
         <div className="hero-actions"><Magnetic className="btn-primary" onClick={openPopup}>Get Free Consultation</Magnetic><Link className="btn btn-ghost" to="/contact">Talk to Solglow</Link></div>
       </Hero>
       <section className="floating-stats service-stats reveal is-visible">
@@ -651,7 +708,7 @@ function ServicePage({ service, openPopup }) {
         </div>
       </Section>
       <Process />
-      <FAQ items={[
+      <FAQ pageKey={service.path.slice(1)} items={service.cmsFaqs?.length ? service.cmsFaqs.map((item) => [item.question || item.title, item.answer]) : [
         [`Who is ${service.title.toLowerCase()} best for?`, `${service.title} is best for ${service.applications.join(", ").toLowerCase()} where the customer wants a practical, reliable clean-energy solution.`],
         ["How does Solglow size the system?", "The team reviews usage pattern, site condition, available space, support expectations and future expansion before recommending a configuration."],
         ["What happens after installation?", "Solglow keeps the focus on handover clarity, performance guidance, support and maintenance so the system remains dependable."]
@@ -665,7 +722,7 @@ function ServicePage({ service, openPopup }) {
 function WhySolar({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="Why solar" title="Solar is no longer optional for smart energy users." text="It reduces power bills, improves energy independence, supports sustainability and creates a better long-term energy position for homes and businesses." image="/images/service-on-grid.png" variant="inner" />
+      <Hero pageKey="why-solar" eyebrow="Why solar" title="Solar is no longer optional for smart energy users." text="It reduces power bills, improves energy independence, supports sustainability and creates a better long-term energy position for homes and businesses." image="/images/service-on-grid.png" variant="inner" />
       <BenefitBand />
       <Section eyebrow="Financial and environmental value" title="Solar combines practical savings with a cleaner future.">
         <div className="feature-grid">
@@ -680,7 +737,7 @@ function WhySolar({ openPopup }) {
         </div>
       </Section>
       <Process />
-      <FAQ items={pageFaqs.whySolar} />
+      <FAQ pageKey="why-solar" items={pageFaqs.whySolar} />
       <CTA openPopup={openPopup} title="Make your energy decision cleaner, smarter and more predictable." />
     </>
   );
@@ -689,7 +746,7 @@ function WhySolar({ openPopup }) {
 function Projects({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="Projects / Gallery" title="A premium gallery system ready for real Solglow installations." text="Use these polished placeholders now, then replace them with verified residential, commercial and industrial project images as the portfolio grows." image="/images/project-residential.png" variant="inner" />
+      <Hero pageKey="projects-gallery" eyebrow="Projects / Gallery" title="A premium gallery system ready for real Solglow installations." text="Use these polished placeholders now, then replace them with verified residential, commercial and industrial project images as the portfolio grows." image="/images/project-residential.png" variant="inner" />
       <GalleryPreview />
       <ProofBand />
       <Section eyebrow="Portfolio categories" title="Organized for the way customers evaluate solar partners.">
@@ -705,13 +762,14 @@ function Projects({ openPopup }) {
         </div>
       </Section>
       <Process />
-      <FAQ items={pageFaqs.projects} />
+      <FAQ pageKey="projects-gallery" items={pageFaqs.projects} />
       <CTA openPopup={openPopup} title="Have a project site ready for solar assessment?" />
     </>
   );
 }
 
 function ContactStrip({ openPopup }) {
+  const { details } = useContactInfo();
   const revealClass = useRevealClass("contact-strip");
   return (
     <section className={revealClass}>
@@ -720,7 +778,7 @@ function ContactStrip({ openPopup }) {
         <h2>Speak with Solglow before choosing your system.</h2>
       </div>
       <Magnetic className="btn-primary" onClick={openPopup}>Open Enquiry Form</Magnetic>
-      <a className="btn btn-ghost" href={`tel:+91${contact.mobile}`}>Call {contact.mobile}</a>
+      <a className="btn btn-ghost" href={`tel:+91${details.mobile}`}>Call {details.mobile}</a>
     </section>
   );
 }
@@ -728,7 +786,7 @@ function ContactStrip({ openPopup }) {
 function ContactPage({ openPopup }) {
   return (
     <>
-      <Hero eyebrow="Contact us" title="Talk to Solglow about your solar project." text="Get professional guidance for rooftop solar, solar plants, water heaters, street lights, backup solutions and batteries." image="/images/service-water-heater.png" variant="inner" />
+      <Hero pageKey="contact" eyebrow="Contact us" title="Talk to Solglow about your solar project." text="Get professional guidance for rooftop solar, solar plants, water heaters, street lights, backup solutions and batteries." image="/images/service-water-heater.png" variant="inner" />
       <Section eyebrow="Before you call" title="A clearer enquiry helps Solglow recommend the right clean-energy path.">
         <div className="feature-grid">
           {[
@@ -748,29 +806,32 @@ function ContactPage({ openPopup }) {
         </div>
       </Section>
       <Process />
-      <FAQ items={pageFaqs.contact} />
+      <FAQ pageKey="contact" items={pageFaqs.contact} />
       <CTA openPopup={openPopup} title="Prefer a quick callback instead?" />
     </>
   );
 }
 
 function ContactCard() {
+  const { details, socialLinks } = useContactInfo();
   return (
     <article className="contact-card tilt">
       <img src="/images/solglow-mark.png" alt="" />
-      <h3>{contact.company}</h3>
-      <p><strong>Corp Off:</strong> {contact.address}</p>
-      <a href={`tel:${contact.phone.replace(/\s/g, "")}`}>Phone: {contact.phone}</a>
-      <a href={`tel:+91${contact.mobile}`}>Mobile: {contact.mobile}</a>
-      <a href={`mailto:${contact.email}`}>Email: {contact.email}</a>
-      <a href="https://www.solglowpowers.com">Website: {contact.website}</a>
-      <div className="director"><strong>{contact.director}</strong><span>Director</span><a href={`tel:+91${contact.mobile}`}>Mobile: {contact.mobile}</a></div>
-      <div className="socials">{social.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div>
+      <h3>{details.company}</h3>
+      <p><strong>Corp Off:</strong> {details.address}</p>
+      <a href={`tel:${details.phone.replace(/\s/g, "")}`}>Phone: {details.phone}</a>
+      <a href={`tel:+91${details.mobile}`}>Mobile: {details.mobile}</a>
+      <a href={`mailto:${details.email}`}>Email: {details.email}</a>
+      <a href={`https://${details.website}`}>Website: {details.website}</a>
+      <div className="director"><strong>{details.director}</strong><span>Director</span><a href={`tel:+91${details.mobile}`}>Mobile: {details.mobile}</a></div>
+      <div className="socials">{socialLinks.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div>
     </article>
   );
 }
 
 function Footer({ openPopup }) {
+  const services = useDynamicServices(serviceData);
+  const { details, socialLinks } = useContactInfo();
   return (
     <footer className="footer">
       <div className="footer-brand">
@@ -780,8 +841,8 @@ function Footer({ openPopup }) {
         <Magnetic className="btn-primary footer-whatsapp" onClick={openPopup}><Icon name="whatsapp" /> WhatsApp / Enquire</Magnetic>
       </div>
       <div><h3>Quick Links</h3>{pages.filter((page) => ["/", "/about", "/projects-gallery", "/why-solar", "/contact"].includes(page.path)).map((page) => <Link key={page.path} to={page.path}>{page.label}</Link>)}</div>
-      <div><h3>Services</h3>{serviceData.map((service) => <Link key={service.path} to={service.path}>{service.title}</Link>)}</div>
-      <div><h3>Contact</h3><p>{contact.address}</p><a href={`tel:+91${contact.mobile}`}>{contact.mobile}</a><a href={`mailto:${contact.email}`}>{contact.email}</a><div className="socials">{social.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div></div>
+      <div><h3>Services</h3>{services.map((service) => <Link key={service.path} to={service.path}>{service.title}</Link>)}</div>
+      <div><h3>Contact</h3><p>{details.address}</p><a href={`tel:+91${details.mobile}`}>{details.mobile}</a><a href={`mailto:${details.email}`}>{details.email}</a><div className="socials">{socialLinks.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div></div>
       <div className="developer-credit">
         <span>Copyright 2026 Solglow Power Solutions Pvt Ltd. All rights reserved.</span>
         <span>Designed and Developed by <a href="https://growwithclickmyze.com/">Clickmyze</a></span>
@@ -792,6 +853,8 @@ function Footer({ openPopup }) {
 }
 
 function Router({ openPopup }) {
+  const services = useDynamicServices(serviceData);
+  const { content } = useCMS();
   const [path, setPath] = useState(window.location.pathname);
   useEffect(() => {
     const sync = () => setPath(window.location.pathname);
@@ -804,21 +867,32 @@ function Router({ openPopup }) {
     return () => clearTimeout(timer);
   }, [path]);
   useEffect(() => {
-    const label = pages.find((page) => page.path === path)?.label || serviceData.find((service) => service.path === path)?.nav || "Home";
-    document.title = `${label} | Solglow Power Solutions Pvt Ltd`;
-    document.querySelector('meta[name="description"]')?.setAttribute("content", `${label} by Solglow Power Solutions Pvt Ltd in Kochi, Kerala. Premium solar rooftop, power plant, backup and clean energy solutions.`);
-  }, [path]);
+    const pageKey = path === "/" ? "home" : path.slice(1);
+    const label = pages.find((page) => page.path === path)?.label || services.find((service) => service.path === path)?.nav || "Home";
+    const seo = content.seo?.find((item) => item.page_key === pageKey);
+    document.title = seo?.meta_title || `${label} | Solglow Power Solutions Pvt Ltd`;
+    document.querySelector('meta[name="description"]')?.setAttribute("content", seo?.meta_description || `${label} by Solglow Power Solutions Pvt Ltd in Kochi, Kerala. Premium solar rooftop, power plant, backup and clean energy solutions.`);
+    document.querySelector('link[rel="canonical"]')?.setAttribute("href", seo?.canonical_url || `https://solglow.vercel.app${path}`);
+    document.querySelector('meta[property="og:title"]')?.setAttribute("content", seo?.meta_title || label);
+    document.querySelector('meta[property="og:description"]')?.setAttribute("content", seo?.meta_description || "Switch to smarter, cleaner and reliable solar energy with Solglow.");
+    document.querySelector('meta[property="og:image"]')?.setAttribute("content", seo?.og_image || "/images/solglow-hero.png");
+    document.getElementById("dynamic-schema")?.remove();
+    if (seo?.schema_json && Object.keys(seo.schema_json).length) {
+      const script = document.createElement("script"); script.id = "dynamic-schema"; script.type = "application/ld+json"; script.textContent = JSON.stringify(seo.schema_json); document.head.appendChild(script);
+    }
+  }, [path, content.seo, services]);
 
   if (path === "/") return <Home openPopup={openPopup} />;
   if (path === "/about") return <About openPopup={openPopup} />;
   if (path === "/projects-gallery") return <Projects openPopup={openPopup} />;
   if (path === "/why-solar") return <WhySolar openPopup={openPopup} />;
   if (path === "/contact") return <ContactPage openPopup={openPopup} />;
-  const service = serviceData.find((item) => item.path === path);
+  const service = services.find((item) => item.path === path);
   return service ? <ServicePage service={service} openPopup={openPopup} /> : <Home openPopup={openPopup} />;
 }
 
 function App() {
+  const { details } = useContactInfo();
   const [popup, setPopup] = useState(false);
   const openPopup = () => {
     sessionStorage.setItem("solglowPopupShown", "true");
@@ -894,9 +968,13 @@ function App() {
       <Footer openPopup={openPopup} />
       <Popup visible={popup} close={closePopup} />
       <a className="whatsapp" href="https://wa.me/919847055764" aria-label="Chat on WhatsApp"><Icon name="whatsapp" /><span>Chat on WhatsApp</span></a>
-      <a className="mobile-call" href={`tel:+91${contact.mobile}`}>Call Now</a>
+      <a className="mobile-call" href={`tel:+91${details.mobile}`}>Call Now</a>
     </>
   );
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  window.location.pathname.startsWith("/admin")
+    ? <Suspense fallback={<div className="admin-route-loading">Loading Solglow CMS...</div>}><AdminApp /></Suspense>
+    : <CMSProvider><App /></CMSProvider>
+);
