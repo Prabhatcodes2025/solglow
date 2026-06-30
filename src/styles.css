@@ -834,7 +834,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
     left: 0;
     right: 0;
     top: calc(100% + 10px);
-    display: none;
+    display: flex;
     justify-content: flex-start;
     align-items: stretch;
     flex-direction: column;
@@ -842,10 +842,21 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
     border: 1px solid var(--line);
     border-radius: 22px;
     background: rgba(3,11,21,0.98);
-    max-height: calc(100svh - 112px);
+    max-height: 0;
     overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: max-height 0.32s ease, opacity 0.24s ease, transform 0.24s ease, visibility 0.24s ease;
   }
-  .nav-links--open { display: flex; }
+  .nav-links--open {
+    max-height: calc(100svh - 112px);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
   .nav-links a, .service-trigger {
     width: 100%;
     text-align: left;
@@ -857,24 +868,30 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
     display: grid;
     width: 100%;
     margin-top: 0.4rem;
-    opacity: 1;
-    visibility: visible;
+    opacity: 0;
+    visibility: hidden;
     transform: none;
     box-shadow: none;
     max-height: 0;
     overflow: hidden;
     padding-top: 0;
     padding-bottom: 0;
-    transition: max-height 0.28s ease, padding 0.28s ease;
+    pointer-events: none;
+    transition: max-height 0.28s ease, padding 0.28s ease, opacity 0.2s ease, visibility 0.2s ease;
   }
   .nav-service:hover .service-menu, .nav-service:focus-within .service-menu {
+    opacity: 0;
+    visibility: hidden;
     transform: none;
   }
-  .nav-service--open .service-menu {
+  .nav-service.nav-service--open .service-menu {
     display: grid;
     max-height: 520px;
     padding-top: 0.7rem;
     padding-bottom: 0.7rem;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
   .nav-cta { justify-self: end; }
   .service-showcase { grid-template-columns: repeat(2, 1fr); }

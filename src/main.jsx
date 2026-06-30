@@ -192,6 +192,20 @@ function generateCaptcha() {
   return { question: `${a} + ${b} = ?`, answer: String(a + b) };
 }
 
+function useRevealClass(extraClass = "") {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    setVisible(false);
+    const frame = requestAnimationFrame(() => setVisible(true));
+    const fallback = setTimeout(() => setVisible(true), 180);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(fallback);
+    };
+  }, [extraClass]);
+  return `reveal ${visible ? "is-visible" : ""} ${extraClass}`.trim();
+}
+
 function navigate(path) {
   window.scrollTo({ top: 0, behavior: "auto" });
   window.history.pushState({}, "", path);
@@ -280,6 +294,19 @@ function Header({ openPopup }) {
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, []);
+  useEffect(() => {
+    if (!open) setServicesOpen(false);
+  }, [open]);
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        setServicesOpen(false);
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
   const closeNav = () => {
     setOpen(false);
     setServicesOpen(false);
@@ -291,17 +318,17 @@ function Header({ openPopup }) {
         <img src="/images/solglow-mark.png" alt="Solglow logo" />
         <span><strong>Solglow</strong><small>Power Solutions Pvt Ltd</small></span>
       </Link>
-      <button className={`menu-btn ${open ? "menu-btn--open" : ""}`} onClick={() => setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>
+      <button className={`menu-btn ${open ? "menu-btn--open" : ""}`} onClick={() => setOpen((current) => !current)} aria-label="Toggle navigation" aria-expanded={open}>
         <Icon name="menu" />
       </button>
-      <nav className={open ? "nav-links nav-links--open" : "nav-links"}>
+      <nav className={open ? "nav-links nav-links--open" : "nav-links"} aria-label="Primary navigation">
         <Link to="/" className={path === "/" ? "active" : ""} onClick={closeNav}>Home</Link>
         <Link to="/about" className={path === "/about" ? "active" : ""} onClick={closeNav}>About Us</Link>
         <div className={`nav-service ${servicesOpen ? "nav-service--open" : ""}`}>
-          <button type="button" className={serviceActive ? "service-trigger active" : "service-trigger"} onClick={() => setServicesOpen(!servicesOpen)} aria-expanded={servicesOpen}>
+          <button type="button" className={serviceActive ? "service-trigger active" : "service-trigger"} onClick={() => setServicesOpen((current) => !current)} aria-expanded={servicesOpen} aria-controls="services-menu">
             Services <span>▾</span>
           </button>
-          <div className="service-menu">
+          <div className="service-menu" id="services-menu">
             {serviceData.map((service) => <Link key={service.path} to={service.path} className={path === service.path ? "active" : ""} onClick={closeNav}>{service.nav}</Link>)}
           </div>
         </div>
@@ -375,8 +402,9 @@ function Popup({ visible, close }) {
 }
 
 function Hero({ eyebrow, title, text, image = "/images/solglow-hero.png", children, variant = "home" }) {
+  const revealClass = useRevealClass(`page-hero page-hero--${variant}`);
   return (
-    <section className={`page-hero page-hero--${variant} reveal is-visible`}>
+    <section className={revealClass}>
       <img className="hero-img" src={image} alt="" />
       <div className="hero-layer" />
       <div className="ray ray-one" />
@@ -394,8 +422,9 @@ function Hero({ eyebrow, title, text, image = "/images/solglow-hero.png", childr
 }
 
 function Section({ eyebrow, title, children, className = "" }) {
+  const revealClass = useRevealClass(`section ${className}`);
   return (
-    <section className={`section reveal ${className}`}>
+    <section className={revealClass}>
       <div className="section-heading">
         {eyebrow && <span className="eyebrow">{eyebrow}</span>}
         {title && <h2>{title}</h2>}
@@ -422,8 +451,9 @@ function Counter({ value, label, suffix = "+" }) {
 }
 
 function CTA({ openPopup, title = "Ready to reduce your power bills with solar?", text = "Talk to Solglow about your site, consumption and the right solar or backup solution for your needs." }) {
+  const revealClass = useRevealClass("cta");
   return (
-    <section className="cta reveal">
+    <section className={revealClass}>
       <span className="eyebrow">Free consultation</span>
       <h2>{title}</h2>
       <p>{text}</p>
@@ -682,8 +712,9 @@ function Projects({ openPopup }) {
 }
 
 function ContactStrip({ openPopup }) {
+  const revealClass = useRevealClass("contact-strip");
   return (
-    <section className="contact-strip reveal">
+    <section className={revealClass}>
       <div>
         <span className="eyebrow">Need guidance?</span>
         <h2>Speak with Solglow before choosing your system.</h2>
