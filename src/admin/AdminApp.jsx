@@ -83,6 +83,10 @@ function SetupScreen() {
   return <main className="admin-setup"><section><img src="/images/solglow-mark.png" alt="" /><span className="admin-kicker">CMS setup</span><h1>Connect your Supabase project.</h1><p>{cmsStatus.message}</p><div className="setup-fields"><label>VITE_SUPABASE_URL<input value="" readOnly placeholder="https://your-project.supabase.co" /></label><label>VITE_SUPABASE_ANON_KEY<input value="" readOnly placeholder="Your public anon key" /></label></div><ol><li>Create a Supabase project.</li><li>Run <code>supabase/schema.sql</code> in the SQL editor.</li><li>Add both values to local and Vercel environment variables.</li><li>Create the first Auth user and promote its profile to <code>admin</code>.</li></ol><a className="admin-primary" href="/">Return to website</a></section></main>;
 }
 
+function AccessDenied({ onSignOut }) {
+  return <main className="admin-setup"><section><img src="/images/solglow-mark.png" alt="" /><span className="admin-kicker">Access control</span><h1>Admin access is not enabled for this account.</h1><p>Your Supabase session is valid, but the profile role must be <code>admin</code> or <code>editor</code> before the CMS dashboard can open.</p><button className="admin-primary" onClick={onSignOut}>Sign out</button></section></main>;
+}
+
 function Dashboard({ stats, recent }) {
   const cards = [
     ["New enquiries", stats.enquiries, MessageSquareQuote, "+ actionable leads"],
@@ -129,7 +133,7 @@ function ModuleManager({ moduleKey }) {
   const load = async () => { setBusy(true); try { setRows(await listRows(config.table)); setError(""); } catch (err) { setError(err.message); } finally { setBusy(false); } };
   useEffect(() => { load(); }, [moduleKey]);
   const visible = useMemo(() => rows.filter((row) => JSON.stringify(row).toLowerCase().includes(search.toLowerCase())), [rows, search]);
-  const remove = async (row) => { if (!window.confirm(`Delete “${row.title}”? This cannot be undone.`)) return; try { await deleteRow(config.table, row.id); load(); } catch (err) { setError(err.message); } };
+  const remove = async (row) => { if (!window.confirm(`Delete "${row.title}"? This cannot be undone.`)) return; try { await deleteRow(config.table, row.id); load(); } catch (err) { setError(err.message); } };
   return <div className="module-view"><div className="module-heading"><div><span className="admin-kicker">Content module</span><h1>{config.label}</h1><p>Create, publish, search and maintain every {config.label.toLowerCase()} record.</p></div><button className="admin-primary" onClick={() => setCreating(true)}><Plus /> Add new</button></div><div className="module-toolbar"><label><Search /><input placeholder={`Search ${config.label.toLowerCase()}...`} value={search} onChange={(e) => setSearch(e.target.value)} /></label><span>{visible.length} records</span></div>{error && <div className="admin-error">{error}</div>}<div className="records">{busy ? <div className="admin-empty"><LoaderCircle className="spin" /> Loading content...</div> : visible.length ? visible.map((row) => <article key={row.id}>{row.image_url && <img src={row.image_url} alt="" />}<div><span className={row.is_published ? "status published" : "status draft"}>{row.is_published ? "Published" : "Draft"}</span><h3>{row.title}</h3><p>{row.summary || row.subtitle || row.description || row.answer || row.value || row.page_key || row.slug || "Ready to edit"}</p><small>Updated {new Date(row.updated_at).toLocaleDateString()}</small></div><div className="record-actions"><button onClick={() => setEditing(row)} aria-label={`Edit ${row.title}`}><Pencil /></button><button onClick={() => remove(row)} aria-label={`Delete ${row.title}`}><Trash2 /></button></div></article>) : <div className="admin-empty">No records yet. Create the first one when you are ready.</div>}</div>{(creating || editing) && <Editor config={config} row={editing} close={() => { setCreating(false); setEditing(null); }} onSaved={() => { setCreating(false); setEditing(null); load(); }} />}</div>;
 }
 
@@ -161,10 +165,21 @@ function AdminShell({ session }) {
 }
 
 export default function AdminApp() {
-  const [session, setSession] = useState(null); const [loading, setLoading] = useState(isSupabaseConfigured); const [recovery, setRecovery] = useState(false);
+  const [session, setSession] = useState(null); const [loading, setLoading] = useState(isSupabaseConfigured); const [recovery, setRecovery] = useState(false); const [role, setRole] = useState(null); const [roleChecked, setRoleChecked] = useState(!isSupabaseConfigured);
   useEffect(() => { if (!supabase) return; supabase.auth.getSession().then(({ data }) => { setSession(data.session); setLoading(false); }); const { data } = supabase.auth.onAuthStateChange((event, next) => { if (event === "PASSWORD_RECOVERY") setRecovery(true); setSession(next); setLoading(false); }); return () => data.subscription.unsubscribe(); }, []);
+  useEffect(() => {
+    if (!supabase || !session) { setRole(null); setRoleChecked(true); return; }
+    let active = true;
+    setRoleChecked(false);
+    supabase.from("profiles").select("role").eq("id", session.user.id).single()
+      .then(({ data }) => { if (active) setRole(data?.role || null); })
+      .finally(() => { if (active) setRoleChecked(true); });
+    return () => { active = false; };
+  }, [session]);
   if (!isSupabaseConfigured) return <SetupScreen />;
   if (loading) return <div className="admin-loading"><LoaderCircle className="spin" /> Loading secure workspace</div>;
   if (!session || recovery) return <AuthScreen recovery={recovery} onRecoveryComplete={() => setRecovery(false)} />;
+  if (!roleChecked) return <div className="admin-loading"><LoaderCircle className="spin" /> Verifying CMS permissions</div>;
+  if (!["admin", "editor"].includes(role)) return <AccessDenied onSignOut={() => supabase.auth.signOut()} />;
   return <AdminShell session={session} />;
 }

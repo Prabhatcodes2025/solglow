@@ -1,13 +1,13 @@
 -- Solglow CMS: run in a new Supabase project's SQL editor.
 create extension if not exists pgcrypto;
 
-create type public.app_role as enum ('admin', 'editor');
+create type public.app_role as enum ('admin', 'editor', 'viewer');
 create type public.enquiry_status as enum ('new', 'contacted', 'qualified', 'closed');
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
-  role public.app_role not null default 'editor',
+  role public.app_role not null default 'viewer',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
