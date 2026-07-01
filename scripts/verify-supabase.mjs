@@ -133,9 +133,24 @@ await runStep("verify public content read policies", async () => {
 });
 
 await runStep("verify enquiries RLS blocks anon select", async () => {
-  const { error } = await supabase.from("enquiries").select("id").limit(1);
-  if (!error) throw new Error("Anonymous select on enquiries succeeded; expected RLS denial.");
-  pass("verify enquiries RLS blocks anon select", error.message);
+  const markerName = `RLS Block ${runId}`;
+  const { error: insertError } = await supabase.from("enquiries").insert({
+    name: markerName,
+    phone: "0000000000",
+    email: "rls-block@example.com",
+    service: "CMS verification",
+    message: "Anonymous read verification.",
+    source: "/scripts/verify-supabase"
+  });
+  if (insertError) throw insertError;
+
+  const { data, error } = await supabase.from("enquiries").select("id,name").eq("name", markerName);
+  if (error) {
+    pass("verify enquiries RLS blocks anon select", error.message);
+    return;
+  }
+  if (data?.length) throw new Error("Anonymous select returned enquiry rows; expected RLS to hide them.");
+  pass("verify enquiries RLS blocks anon select", "anonymous select returned no rows");
 });
 
 await runStep("test enquiry submission", async () => {
@@ -199,7 +214,7 @@ if (!adminEmail || !adminPassword) {
     });
 
     await runStep("test enquiry status updates", async () => {
-      const { data: created, error: createError } = await supabase.from("enquiries").insert({
+      const { data: created, error: createError } = await adminClient.from("enquiries").insert({
         name: `Status ${runId}`,
         phone: "0000000000",
         email: "status@example.com",
