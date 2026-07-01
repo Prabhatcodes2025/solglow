@@ -34,6 +34,15 @@ const requiredTables = [
 
 const results = [];
 
+function isHttpUrl(value) {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function pass(name, detail = "") {
   results.push({ status: "pass", name, detail });
 }
@@ -54,8 +63,8 @@ async function runStep(name, fn) {
   }
 }
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  fail("environment", "VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set in the shell or .env.local.");
+if (!isHttpUrl(supabaseUrl) || !supabaseAnonKey) {
+  fail("environment", "VITE_SUPABASE_URL must be a valid HTTP/HTTPS URL and VITE_SUPABASE_ANON_KEY must be set.");
   console.table(results);
   process.exit(1);
 }

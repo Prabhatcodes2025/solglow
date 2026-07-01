@@ -3,7 +3,16 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim() || "";
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() || "";
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+function isHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export const isSupabaseConfigured = Boolean(isHttpUrl(supabaseUrl) && supabaseAnonKey);
 
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
@@ -13,4 +22,4 @@ export const supabase = isSupabaseConfigured
 
 export const cmsStatus = isSupabaseConfigured
   ? { configured: true, message: "Supabase connected" }
-  : { configured: false, message: "Add Supabase environment keys to enable the CMS." };
+  : { configured: false, message: "Add a valid Supabase URL and anon key to enable the CMS." };

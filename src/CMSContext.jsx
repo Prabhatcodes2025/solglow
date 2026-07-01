@@ -18,21 +18,27 @@ export function CMSProvider({ children }) {
 
 export const useCMS = () => useContext(CMSContext);
 
+const hasText = (value) => typeof value === "string" ? value.trim().length > 0 : value != null;
+
 export function useDynamicServices(fallback) {
   const { content } = useCMS();
-  if (!content.services?.length) return fallback;
-  return content.services.map((row) => {
-    const original = fallback.find((item) => item.path === `/${row.slug}` || item.path.endsWith(row.slug)) || {};
-    return {
+  const rows = (content.services || []).filter((row) => hasText(row.slug) && hasText(row.title));
+  if (!rows.length) return fallback;
+
+  const byPath = new Map(fallback.map((service) => [service.path, service]));
+  for (const row of rows) {
+    const path = `/${String(row.slug).replace(/^\/+/, "")}`;
+    const original = byPath.get(path) || fallback.find((item) => item.path.endsWith(row.slug)) || {};
+    byPath.set(path, {
       ...original,
-      path: `/${row.slug}`,
-      nav: row.nav_label || row.title,
+      path,
+      nav: row.nav_label || row.title || original.nav,
       icon: row.icon || original.icon || "SOL",
-      title: row.title,
+      title: row.title || original.title,
       eyebrow: row.eyebrow || original.eyebrow || "Solar solution",
       image: row.image_url || original.image || "/images/solglow-hero.png",
       summary: row.summary || original.summary || "Professional clean-energy solutions designed around your site.",
-      lead: row.body || original.lead || row.summary,
+      lead: row.body || original.lead || row.summary || original.summary,
       benefits: Array.isArray(row.benefits) && row.benefits.length ? row.benefits : original.benefits || [],
       applications: row.metadata?.applications || original.applications || [],
       metrics: row.metadata?.metrics || original.metrics || [["Smart", "energy planning"], ["Quality", "execution"], ["Long", "term value"]],
@@ -40,6 +46,11 @@ export function useDynamicServices(fallback) {
       cmsFaqs: Array.isArray(row.faqs) ? row.faqs : [],
       ctaLabel: row.cta_label || "Request a Callback",
       ctaUrl: row.cta_url || ""
-    };
-  });
+    });
+  }
+
+  const fallbackPaths = new Set(fallback.map((service) => service.path));
+  const mergedFallback = fallback.map((service) => byPath.get(service.path) || service);
+  const additionalServices = [...byPath.entries()].filter(([path]) => !fallbackPaths.has(path)).map(([, service]) => service);
+  return [...mergedFallback, ...additionalServices];
 }

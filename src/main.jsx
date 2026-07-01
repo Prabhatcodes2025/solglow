@@ -152,11 +152,12 @@ const proofStats = [["25+", "Team members"], ["180 kW", "IOCL Parippalli solar p
 
 function useContactInfo() {
   const { content } = useCMS();
-  const dynamic = Object.fromEntries((content.contact || []).map((item) => [item.key, item.value]));
-  const dynamicSocial = content.social?.length
-    ? content.social.map((item) => [item.title || item.platform, item.icon || item.platform?.toLowerCase(), item.url])
+  const dynamic = Object.fromEntries((content.contact || []).filter((item) => item.key && item.value).map((item) => [item.key, item.value]));
+  const socialRows = (content.social || []).filter((item) => item.url);
+  const dynamicSocial = socialRows.length
+    ? socialRows.map((item) => [item.title || item.platform, item.icon || item.platform?.toLowerCase(), item.url])
     : social;
-  return { details: { ...contact, ...dynamic }, socialLinks: dynamicSocial };
+  return { details: { ...contact, ...dynamic }, socialLinks: dynamicSocial.length ? dynamicSocial : social };
 }
 
 const pageFaqs = {
@@ -527,7 +528,7 @@ function Home({ openPopup }) {
       <WhyCards />
       <BenefitBand />
       <Process />
-      <GalleryPreview />
+      <GalleryPreviewSafe />
       <Testimonials />
       <FAQ pageKey="home" items={pageFaqs.home} />
       <CTA openPopup={openPopup} />
@@ -598,7 +599,7 @@ function Process() {
 
 function FAQ({ items, pageKey }) {
   const { content } = useCMS();
-  const dynamicItems = content.faq?.filter((item) => item.page_key === pageKey).map((item) => [item.title, item.answer]);
+  const dynamicItems = content.faq?.filter((item) => item.page_key === pageKey && item.title && item.answer).map((item) => [item.title, item.answer]);
   const resolvedItems = dynamicItems?.length ? dynamicItems : items;
   return (
     <Section eyebrow="FAQ" title="Answers that help customers move forward with confidence.">
@@ -633,9 +634,35 @@ function GalleryPreview() {
   );
 }
 
+function GalleryPreviewSafe() {
+  const { content } = useCMS();
+  const fallbackItems = [
+    ["/images/project-residential.png", "Residential rooftop installations", "Premium home solar"],
+    ["/images/service-on-grid.png", "Grid-connected solar plants", "On-grid systems"],
+    ["/images/service-off-grid.png", "Solar plus battery systems", "Off-grid resilience"],
+    ["/images/service-water-heater.png", "Solar water heaters", "Thermal savings"],
+    ["/images/service-street-lights.png", "Solar street lights", "Outdoor infrastructure"],
+    ["/images/project-commercial.png", "Commercial and industrial arrays", "Business energy"]
+  ];
+  const cmsGallery = content.gallery?.filter((item) => item.image_url && item.title).map((item) => [item.image_url, item.alt_text || item.title, item.category || "Solglow project"]) || [];
+  const cmsProjects = content.projects?.filter((item) => item.title).map((item) => [item.image_url || "/images/project-residential.png", item.title, [item.capacity, item.location].filter(Boolean).join(" - ") || item.project_type || "Solglow project"]) || [];
+  const items = cmsGallery.length
+    ? [...cmsGallery, ...fallbackItems.slice(cmsGallery.length)]
+    : cmsProjects.length
+      ? [...cmsProjects, ...fallbackItems.slice(cmsProjects.length)]
+      : fallbackItems;
+  return (
+    <Section eyebrow="Projects / Gallery" title="Image-led proof points that make the brand feel credible and premium.">
+      <div className="project-grid">
+        {items.map(([src, title, tag]) => <article className="project-card tilt" key={title}><img src={src} alt={title} /><div><span>{tag}</span><h3>{title}</h3></div></article>)}
+      </div>
+    </Section>
+  );
+}
+
 function DynamicSections({ moduleKey }) {
   const { content } = useCMS();
-  const records = content[moduleKey] || [];
+  const records = (content[moduleKey] || []).filter((item) => item.title && (item.body || item.image_url));
   if (!records.length) return null;
   return records.map((item) => <Section key={item.id} eyebrow={item.subtitle} title={item.title}>
     <div className="editorial-layout cms-section">
@@ -647,8 +674,9 @@ function DynamicSections({ moduleKey }) {
 
 function Testimonials() {
   const { content } = useCMS();
-  if (!content.testimonials?.length) return null;
-  return <Section eyebrow="Customer stories" title="Trusted outcomes, shared by Solglow customers."><div className="faq-grid testimonial-grid">{content.testimonials.map((item) => <article className="faq-card tilt" key={item.id}>{item.image_url && <img src={item.image_url} alt={item.customer_name} />}<div className="testimonial-stars">Rated {item.rating || 5}/5</div><p>"{item.quote}"</p><h3>{item.customer_name}</h3><span>{item.company}</span></article>)}</div></Section>;
+  const items = content.testimonials?.filter((item) => item.customer_name && item.quote) || [];
+  if (!items.length) return null;
+  return <Section eyebrow="Customer stories" title="Trusted outcomes, shared by Solglow customers."><div className="faq-grid testimonial-grid">{items.map((item) => <article className="faq-card tilt" key={item.id}>{item.image_url && <img src={item.image_url} alt={item.customer_name} />}<div className="testimonial-stars">Rated {item.rating || 5}/5</div><p>"{item.quote}"</p><h3>{item.customer_name}</h3><span>{item.company}</span></article>)}</div></Section>;
 }
 
 function About({ openPopup }) {
@@ -747,7 +775,7 @@ function Projects({ openPopup }) {
   return (
     <>
       <Hero pageKey="projects-gallery" eyebrow="Projects / Gallery" title="A premium gallery system ready for real Solglow installations." text="Use these polished placeholders now, then replace them with verified residential, commercial and industrial project images as the portfolio grows." image="/images/project-residential.png" variant="inner" />
-      <GalleryPreview />
+      <GalleryPreviewSafe />
       <ProofBand />
       <Section eyebrow="Portfolio categories" title="Organized for the way customers evaluate solar partners.">
         <div className="feature-grid">
