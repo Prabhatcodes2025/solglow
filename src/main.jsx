@@ -333,10 +333,10 @@ function Header({ openPopup }) {
         <img src="/images/solglow-mark.png" alt="Solglow logo" />
         <span><strong>Solglow</strong><small>Power Solutions Pvt Ltd</small></span>
       </Link>
-      <button className={`menu-btn ${open ? "menu-btn--open" : ""}`} onClick={() => setOpen((current) => !current)} aria-label="Toggle navigation" aria-expanded={open}>
+      <button className={`menu-btn ${open ? "menu-btn--open" : ""}`} onClick={() => setOpen((current) => !current)} aria-label="Toggle navigation" aria-expanded={open} aria-controls="primary-navigation">
         <Icon name="menu" />
       </button>
-      <nav className={open ? "nav-links nav-links--open" : "nav-links"} aria-label="Primary navigation">
+      <nav className={open ? "nav-links nav-links--open" : "nav-links"} id="primary-navigation" aria-label="Primary navigation">
         <Link to="/" className={path === "/" ? "active" : ""} onClick={closeNav}>Home</Link>
         <Link to="/about" className={path === "/about" ? "active" : ""} onClick={closeNav}>About Us</Link>
         <div className={`nav-service ${servicesOpen ? "nav-service--open" : ""}`}>

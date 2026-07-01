@@ -2,7 +2,7 @@
 create extension if not exists pgcrypto;
 
 create type public.app_role as enum ('admin', 'editor', 'viewer');
-create type public.enquiry_status as enum ('new', 'contacted', 'qualified', 'closed');
+create type public.enquiry_status as enum ('new', 'contacted', 'qualified', 'converted', 'closed');
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -114,6 +114,7 @@ do $$ declare table_name text; begin
   end loop;
 end $$;
 create policy "Anyone can create an enquiry" on public.enquiries for insert to anon, authenticated with check (status = 'new');
+create policy "Anonymous cannot read enquiries" on public.enquiries as restrictive for select to anon using (false);
 create policy "Staff can view enquiries" on public.enquiries for select to authenticated using (public.is_staff());
 create policy "Staff can update enquiries" on public.enquiries for update to authenticated using (public.is_staff());
 create policy "Admins can delete enquiries" on public.enquiries for delete to authenticated using (public.is_admin());

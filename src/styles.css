@@ -839,6 +839,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
     left: 0;
     right: 0;
     top: calc(100% + 10px);
+    width: 100%;
+    max-width: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: stretch;
@@ -848,6 +850,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
     border-radius: 22px;
     background: rgba(3,11,21,0.98);
     max-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     opacity: 0;
     visibility: hidden;
@@ -866,12 +869,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
     width: 100%;
     text-align: left;
     padding: 0.78rem 0.9rem;
+    white-space: normal;
   }
-  .nav-service { width: 100%; }
+  .nav-service { width: 100%; min-width: 0; }
   .service-menu {
     position: static;
     display: grid;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     margin-top: 0.4rem;
     opacity: 0;
     visibility: hidden;
@@ -891,12 +897,17 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
   }
   .nav-service.nav-service--open .service-menu {
     display: grid;
-    max-height: 520px;
+    max-height: min(58svh, 560px);
     padding-top: 0.7rem;
     padding-bottom: 0.7rem;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    overflow-y: auto;
+  }
+  .service-menu a {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .nav-cta { justify-self: end; }
   .service-showcase { grid-template-columns: repeat(2, 1fr); }
@@ -909,6 +920,28 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
 @media (max-width: 700px) {
   .cursor-glow, .cursor-dot, .cursor-trail { display: none; }
   .navbar { width: calc(100% - 20px); top: 10px; grid-template-columns: 1fr auto; }
+  .nav-links {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    top: 82px;
+    width: auto;
+    max-height: 0;
+    max-width: calc(100vw - 20px);
+    border-radius: 20px;
+  }
+  .nav-links--open {
+    max-height: calc(100svh - 96px);
+  }
+  .service-trigger {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .service-menu {
+    border-radius: 15px;
+  }
   .brand { min-width: 0; }
   .brand small { display: none; }
   .brand img { width: 44px; height: 44px; }
