@@ -8,12 +8,18 @@ const AdminApp = lazy(() => import("./admin/AdminApp"));
 
 const contact = {
   company: "Solglow Power Solutions Pvt Ltd",
-  address: "No.52/2321A, Pallathusseri Building, Adjacent to Hotel Broad Bean, Sahakarana Road, Vyttila Kochi, Kerala, India 682019",
+  address: "1st Floor, No. 5/143A, VS Building, Near Metro Pillar P908R, Thykudom, Vyttila, Cochin - 682019",
   phone: "0484 2940532",
-  mobile: "9847055764",
-  email: "info@solglowpowers.com",
+  mobile: "98470 55764",
+  mobile2: "80757 65005",
+  whatsapp: "9847055764",
+  email: "solglowpower@gmail.com",
   website: "www.solglowpowers.com",
-  director: "DR GOPAL SHANKAR"
+  director: "Dr. Gopal Shankar",
+  director_title: "Managing Director",
+  branch_regions: "Ernakulam, Trivandrum, Kollam, Thrissur, Calicut",
+  footer_description: "Premium renewable energy solutions for homes, businesses and industries across Kerala, backed by consultation, quality installation and O&M support.",
+  footer_copyright: "Copyright 2026 Solglow Power Solutions Pvt Ltd. All rights reserved."
 };
 
 const social = [
@@ -178,6 +184,12 @@ function useContactInfo() {
   return { details: { ...contact, ...dynamic }, socialLinks: dynamicSocial.length ? dynamicSocial : social };
 }
 
+const cleanPhone = (value = "") => String(value).replace(/[^\d+]/g, "");
+const whatsappNumber = (details) => {
+  const number = cleanPhone(details.whatsapp || details.mobile).replace(/^\+/, "");
+  return number.startsWith("91") ? number : `91${number}`;
+};
+
 const pageFaqs = {
   home: [
     ["What does Solglow help with?", "Solglow supports rooftop solar, on-grid and off-grid plants, solar water heaters, street lights, backup systems and batteries for homes, businesses and industries."],
@@ -201,7 +213,7 @@ const pageFaqs = {
   ],
   contact: [
     ["What should I share before a callback?", "Share your location, approximate electricity bill, roof or site type, preferred service and whether savings or backup is the priority."],
-    ["Can I contact through WhatsApp?", "Yes. The WhatsApp CTA connects directly to Solglow at +91 9847055764."],
+    ["Can I contact through WhatsApp?", "Yes. The WhatsApp CTA connects directly to Solglow at +91 98470 55764."],
     ["Does the enquiry form have captcha validation?", "Yes. The form uses a random math captcha that refreshes after submission and whenever the popup opens."]
   ]
 };
@@ -495,6 +507,7 @@ function Counter({ value, label, suffix = "+" }) {
 
 function CTA({ openPopup, title = "Ready to reduce your power bills with solar?", text = "Talk to Solglow about your site, consumption and the right solar or backup solution for your needs." }) {
   const revealClass = useRevealClass("cta");
+  const { details } = useContactInfo();
   return (
     <section className={revealClass}>
       <span className="eyebrow">Free consultation</span>
@@ -502,7 +515,7 @@ function CTA({ openPopup, title = "Ready to reduce your power bills with solar?"
       <p>{text}</p>
       <div className="cta-actions">
         <Magnetic className="btn-primary" onClick={openPopup}>Request a Callback</Magnetic>
-        <a className="btn btn-ghost" href="https://wa.me/919847055764">WhatsApp Solglow</a>
+        <a className="btn btn-ghost" href={`https://wa.me/${whatsappNumber(details)}`}>WhatsApp Solglow</a>
       </div>
     </section>
   );
@@ -697,6 +710,21 @@ function DynamicSections({ moduleKey, exclude = [] }) {
   </Section>);
 }
 
+function LeadershipTeam({ leaders = [] }) {
+  if (!leaders.length) return null;
+  return (
+    <Section eyebrow="Leadership Team" title="Experienced leadership for quality-driven solar execution.">
+      <div className="feature-grid leadership-grid">
+        {leaders.map((leader) => <article className="feature-card tilt" key={leader.name}>
+          <span>{leader.role}</span>
+          <h3>{leader.name}</h3>
+          <p>{leader.bio}</p>
+        </article>)}
+      </div>
+    </Section>
+  );
+}
+
 function Testimonials() {
   const { content } = useCMS();
   const cmsItems = content.testimonials?.filter((item) => item.customer_name && item.quote) || [];
@@ -706,6 +734,18 @@ function Testimonials() {
 
 function About({ openPopup }) {
   const whoWeAre = useCMSRecord("about", "slug", "who-we-are");
+  const leadership = Array.isArray(whoWeAre?.metadata?.leadership) ? whoWeAre.metadata.leadership : [
+    {
+      name: "Dr. Gopal Shankar - Managing Director",
+      role: "Managing Director",
+      bio: "Dr. Gopal Shankar, PhD, MBA, brings over 35 years of leadership experience in the power and energy industry. He has held senior positions with Exide Industries Ltd., Standard Batteries Ltd., Tudor India (Exide USA), UPT Batteries Pvt. Ltd. (Kirloskar Group), and Eco Energy Battery Pvt. Ltd. His expertise in manufacturing, business development, and customer relationships drives Solglow's growth and quality commitment."
+    },
+    {
+      name: "Mr. Sharat Varier - Director",
+      role: "Director",
+      bio: "Mr. Sharat Varier is a Marine Engineer with a B.Tech in Mechanical Engineering from MG University and an MBA. He has experience with Anglo-Eastern Shipping, Shipping Corporation of India, and US Technologies. He supports Solglow's technical execution, project delivery, and operational excellence."
+    }
+  ];
   return (
     <>
       <Hero pageKey="about" eyebrow="About Solglow" title="A Kerala-based solar company with a global, premium service mindset." text="Solglow Power Solutions Pvt Ltd helps homes, businesses and industries reduce energy costs and move toward reliable sustainable power." image="/images/project-commercial.png" variant="inner" />
@@ -721,6 +761,7 @@ function About({ openPopup }) {
           </div>
         </div>
       </Section>
+      <LeadershipTeam leaders={leadership} />
       <DynamicSections moduleKey="about" exclude={["who-we-are"]} />
       <ProofBand />
       <Process />
@@ -832,7 +873,7 @@ function ContactStrip({ openPopup }) {
         <h2>Speak with Solglow before choosing your system.</h2>
       </div>
       <Magnetic className="btn-primary" onClick={openPopup}>Open Enquiry Form</Magnetic>
-      <a className="btn btn-ghost" href={`tel:+91${details.mobile}`}>Call {details.mobile}</a>
+      <a className="btn btn-ghost" href={`tel:+91${cleanPhone(details.mobile)}`}>Call +91 {details.mobile}</a>
     </section>
   );
 }
@@ -868,16 +909,19 @@ function ContactPage({ openPopup }) {
 
 function ContactCard() {
   const { details, socialLinks } = useContactInfo();
+  const branchRegions = String(details.branch_regions || "").split(",").map((item) => item.trim()).filter(Boolean);
   return (
     <article className="contact-card tilt">
       <img src="/images/solglow-mark.png" alt="" />
       <h3>{details.company}</h3>
       <p><strong>Corp Off:</strong> {details.address}</p>
-      <a href={`tel:${details.phone.replace(/\s/g, "")}`}>Phone: {details.phone}</a>
-      <a href={`tel:+91${details.mobile}`}>Mobile: {details.mobile}</a>
+      <a href={`tel:+91${cleanPhone(details.mobile)}`}>Mobile: +91 {details.mobile}</a>
+      <a href={`tel:+91${cleanPhone(details.mobile2)}`}>Mobile: +91 {details.mobile2}</a>
+      <a href={`tel:${cleanPhone(details.phone)}`}>Phone: {details.phone}</a>
       <a href={`mailto:${details.email}`}>Email: {details.email}</a>
       <a href={`https://${details.website}`}>Website: {details.website}</a>
-      <div className="director"><strong>{details.director}</strong><span>Director</span><a href={`tel:+91${details.mobile}`}>Mobile: {details.mobile}</a></div>
+      <div className="director"><strong>{details.director}</strong><span>{details.director_title || "Managing Director"}</span><a href={`tel:+91${cleanPhone(details.mobile)}`}>Mobile: +91 {details.mobile}</a></div>
+      {!!branchRegions.length && <div className="branch-regions"><strong>Branch regions</strong><span>{branchRegions.join(" / ")}</span></div>}
       <div className="socials">{socialLinks.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div>
     </article>
   );
@@ -886,21 +930,20 @@ function ContactCard() {
 function Footer({ openPopup }) {
   const services = useDynamicServices(serviceData);
   const { details, socialLinks } = useContactInfo();
+  const branchRegions = String(details.branch_regions || "").split(",").map((item) => item.trim()).filter(Boolean);
   return (
     <footer className="footer">
       <div className="footer-brand">
         <img src="/images/solglow-mark.png" alt="Solglow logo" />
         <strong>Solglow Power Solutions Pvt Ltd</strong>
-        <p>Premium renewable energy solutions for homes, businesses and industries across Kerala, backed by consultation, quality installation and O&M support.</p>
+        <p>{details.footer_description}</p>
         <Magnetic className="btn-primary footer-whatsapp" onClick={openPopup}><Icon name="whatsapp" /> WhatsApp / Enquire</Magnetic>
       </div>
       <div><h3>Quick Links</h3>{pages.filter((page) => ["/", "/about", "/projects-gallery", "/why-solar", "/contact"].includes(page.path)).map((page) => <Link key={page.path} to={page.path}>{page.label}</Link>)}</div>
       <div><h3>Services</h3>{services.map((service) => <Link key={service.path} to={service.path}>{service.title}</Link>)}</div>
-      <div><h3>Contact</h3><p>{details.address}</p><a href={`tel:+91${details.mobile}`}>{details.mobile}</a><a href={`mailto:${details.email}`}>{details.email}</a><div className="socials">{socialLinks.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div></div>
-      <div className="developer-credit">
-        <span>Copyright 2026 Solglow Power Solutions Pvt Ltd. All rights reserved.</span>
-        <span>Designed and Developed by <a href="https://growwithclickmyze.com/">Clickmyze</a></span>
-        <span>Want a website like this? <a href="https://wa.me/919993013936">Contact Developer: +91 9993013936 (WA)</a></span>
+      <div><h3>Contact</h3><p>{details.address}</p><a href={`tel:+91${cleanPhone(details.mobile)}`}>+91 {details.mobile}</a><a href={`tel:+91${cleanPhone(details.mobile2)}`}>+91 {details.mobile2}</a><a href={`tel:${cleanPhone(details.phone)}`}>{details.phone}</a><a href={`mailto:${details.email}`}>{details.email}</a>{!!branchRegions.length && <p>Branches: {branchRegions.join(", ")}</p>}<div className="socials">{socialLinks.map(([name, icon, url]) => <a key={name} href={url} aria-label={name}><Icon name={icon} /></a>)}</div></div>
+      <div className="footer-legal">
+        <span>{details.footer_copyright}</span>
       </div>
     </footer>
   );
@@ -1021,8 +1064,8 @@ function App() {
       <main><Router openPopup={openPopup} /></main>
       <Footer openPopup={openPopup} />
       <Popup visible={popup} close={closePopup} />
-      <a className="whatsapp" href="https://wa.me/919847055764" aria-label="Chat on WhatsApp"><Icon name="whatsapp" /><span>Chat on WhatsApp</span></a>
-      <a className="mobile-call" href={`tel:+91${details.mobile}`}>Call Now</a>
+      <a className="whatsapp" href={`https://wa.me/${whatsappNumber(details)}`} aria-label="Chat on WhatsApp"><Icon name="whatsapp" /><span>Chat on WhatsApp</span></a>
+      <a className="mobile-call" href={`tel:+91${cleanPhone(details.mobile)}`}>Call Now</a>
     </>
   );
 }

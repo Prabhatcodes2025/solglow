@@ -200,7 +200,19 @@ await upsert("about_sections", {
   metadata: {
     positioning: "The company is positioned around practical consultation, customized system design, quality product selection, reliable installation and long-term support. The goal is simple: help customers make a confident clean-energy investment.",
     proof: "With a dedicated 25+ member team, 800+ projects delivered and landmark work such as the 180 kW IOCL Parippalli solar project, Solglow brings both technical discipline and regional service reach to Kerala customers.",
-    pillars: ["Professional Solar Consultation", "Customized System Design", "Quality Products", "Reliable Installation", "Long-Term Support", "Energy Saving Focus"]
+    pillars: ["Professional Solar Consultation", "Customized System Design", "Quality Products", "Reliable Installation", "Long-Term Support", "Energy Saving Focus"],
+    leadership: [
+      {
+        name: "Dr. Gopal Shankar - Managing Director",
+        role: "Managing Director",
+        bio: "Dr. Gopal Shankar, PhD, MBA, brings over 35 years of leadership experience in the power and energy industry. He has held senior positions with Exide Industries Ltd., Standard Batteries Ltd., Tudor India (Exide USA), UPT Batteries Pvt. Ltd. (Kirloskar Group), and Eco Energy Battery Pvt. Ltd. His expertise in manufacturing, business development, and customer relationships drives Solglow's growth and quality commitment."
+      },
+      {
+        name: "Mr. Sharat Varier - Director",
+        role: "Director",
+        bio: "Mr. Sharat Varier is a Marine Engineer with a B.Tech in Mechanical Engineering from MG University and an MBA. He has experience with Anglo-Eastern Shipping, Shipping Corporation of India, and US Technologies. He supports Solglow's technical execution, project delivery, and operational excellence."
+      }
+    ]
   },
   is_published: true
 }, "slug");
@@ -262,12 +274,18 @@ for (const testimonial of [
 
 for (const [key, title, value] of [
   ["company", "Company", "Solglow Power Solutions Pvt Ltd"],
-  ["address", "Address", "No.52/2321A, Pallathusseri Building, Adjacent to Hotel Broad Bean, Sahakarana Road, Vyttila Kochi, Kerala, India 682019"],
+  ["address", "Address", "1st Floor, No. 5/143A, VS Building, Near Metro Pillar P908R, Thykudom, Vyttila, Cochin - 682019"],
   ["phone", "Phone", "0484 2940532"],
-  ["mobile", "Mobile", "9847055764"],
-  ["email", "Email", "info@solglowpowers.com"],
+  ["mobile", "Mobile", "98470 55764"],
+  ["mobile2", "Mobile 2", "80757 65005"],
+  ["whatsapp", "WhatsApp", "9847055764"],
+  ["email", "Email", "solglowpower@gmail.com"],
   ["website", "Website", "www.solglowpowers.com"],
-  ["director", "Director", "DR GOPAL SHANKAR"]
+  ["director", "Managing Director", "Dr. Gopal Shankar"],
+  ["director_title", "Director Title", "Managing Director"],
+  ["branch_regions", "Branch Regions", "Ernakulam, Trivandrum, Kollam, Thrissur, Calicut"],
+  ["footer_description", "Footer Description", "Premium renewable energy solutions for homes, businesses and industries across Kerala, backed by consultation, quality installation and O&M support."],
+  ["footer_copyright", "Footer Copyright", "Copyright 2026 Solglow Power Solutions Pvt Ltd. All rights reserved."]
 ]) await upsert("contact_details", { key, title, value, is_published: true }, "key");
 
 for (const [platform, title, urlValue, icon] of [

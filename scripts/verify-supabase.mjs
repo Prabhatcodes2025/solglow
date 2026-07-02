@@ -160,6 +160,33 @@ await runStep("verify seeded CMS content exists", async () => {
   pass("verify seeded CMS content exists", `${expected.length} modules populated`);
 });
 
+await runStep("verify current Solglow content values", async () => {
+  const { data: contactRows, error: contactError } = await supabase.from("contact_details").select("key,value");
+  if (contactError) throw contactError;
+  const contact = Object.fromEntries((contactRows || []).map((row) => [row.key, row.value]));
+  const expectedContact = {
+    address: "1st Floor, No. 5/143A, VS Building, Near Metro Pillar P908R, Thykudom, Vyttila, Cochin - 682019",
+    phone: "0484 2940532",
+    mobile: "98470 55764",
+    mobile2: "80757 65005",
+    email: "solglowpower@gmail.com",
+    website: "www.solglowpowers.com",
+    director: "Dr. Gopal Shankar",
+    branch_regions: "Ernakulam, Trivandrum, Kollam, Thrissur, Calicut"
+  };
+  for (const [key, value] of Object.entries(expectedContact)) {
+    if (contact[key] !== value) throw new Error(`contact_details.${key}: expected "${value}", found "${contact[key] || ""}"`);
+  }
+
+  const { data: about, error: aboutError } = await supabase.from("about_sections").select("metadata").eq("slug", "who-we-are").single();
+  if (aboutError) throw aboutError;
+  const leaders = about?.metadata?.leadership || [];
+  if (leaders.length < 2) throw new Error("Leadership metadata is missing required leaders.");
+  if (!leaders.some((leader) => String(leader.name).includes("Dr. Gopal Shankar"))) throw new Error("Dr. Gopal Shankar leadership content is missing.");
+  if (!leaders.some((leader) => String(leader.name).includes("Mr. Sharat Varier"))) throw new Error("Mr. Sharat Varier leadership content is missing.");
+  pass("verify current Solglow content values", "contact/leadership/footer CMS values");
+});
+
 await runStep("verify enquiries RLS blocks anon select", async () => {
   const markerName = `RLS Block ${runId}`;
   const { error: insertError } = await supabase.from("enquiries").insert({

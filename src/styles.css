@@ -637,8 +637,8 @@ h3 { font-size: 1.08rem; }
 .testimonial-grid img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; margin-bottom: 1rem; }
 .testimonial-stars { color: var(--yellow); font-size: .76rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .testimonial-grid > article > span { color: var(--muted); }
-.director { margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--line); display: grid; gap: 0.25rem; }
-.director span { color: var(--green); }
+.director, .branch-regions { margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--line); display: grid; gap: 0.25rem; }
+.director span, .branch-regions span { color: var(--green); }
 .socials { display: flex; flex-wrap: wrap; gap: 0.65rem; }
 .socials a {
   width: 42px;
@@ -766,7 +766,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
 .footer a, .footer span { color: var(--muted); transition: color 0.2s ease, transform 0.2s ease; }
 .footer a:hover { color: var(--yellow); transform: translateX(4px); }
 .footer-brand img { width: 82px; filter: drop-shadow(0 0 20px rgba(255,209,102,0.25)); }
-.developer-credit {
+.footer-legal {
   grid-column: 1 / -1;
   padding-top: 1.3rem;
   border-top: 1px solid var(--line);
@@ -775,7 +775,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
   flex-wrap: wrap;
   justify-content: space-between;
 }
-.developer-credit a { color: var(--yellow); }
+.footer-legal a { color: var(--yellow); }
 
 .whatsapp, .mobile-call {
   position: fixed;
@@ -959,7 +959,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--yellow); box-sha
   .project-card { min-height: 310px; }
   .visual-card { min-height: 330px; }
   .popup-media { min-height: 170px; }
-  .developer-credit { flex-direction: column; }
+  .footer-legal { flex-direction: column; }
   .whatsapp { bottom: 76px; }
   .mobile-call { display: grid; }
 }
