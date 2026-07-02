@@ -100,6 +100,12 @@ async function insertUpdateDelete(client, table, payload) {
   if (deleted?.length) throw new Error(`${table}: delete did not persist.`);
 }
 
+async function publicRow(table, column, value) {
+  const { data, error } = await supabase.from(table).select("*").eq(column, value);
+  if (error) throw error;
+  return data || [];
+}
+
 if (!isHttpUrl(supabaseUrl) || !supabaseAnonKey) {
   fail("environment", "VITE_SUPABASE_URL must be a valid HTTP/HTTPS URL and VITE_SUPABASE_ANON_KEY must be set.");
   console.table(results);
@@ -130,6 +136,28 @@ await runStep("verify public content read policies", async () => {
     if (error) throw new Error(`${table}: ${error.message}`);
   }
   pass("verify public content read policies");
+});
+
+await runStep("verify seeded CMS content exists", async () => {
+  const expected = [
+    ["hero_sections", 5],
+    ["homepage_sections", 1],
+    ["about_sections", 1],
+    ["services", 8],
+    ["projects", 3],
+    ["gallery_items", 3],
+    ["testimonials", 2],
+    ["faqs", 6],
+    ["contact_details", 7],
+    ["social_links", 3],
+    ["seo_settings", 5]
+  ];
+  for (const [table, minimum] of expected) {
+    const { count, error } = await supabase.from(table).select("id", { count: "exact", head: true });
+    if (error) throw new Error(`${table}: ${error.message}`);
+    if ((count || 0) < minimum) throw new Error(`${table}: expected at least ${minimum} records, found ${count || 0}`);
+  }
+  pass("verify seeded CMS content exists", `${expected.length} modules populated`);
 });
 
 await runStep("verify enquiries RLS blocks anon select", async () => {
@@ -211,6 +239,74 @@ if (!adminEmail || !adminPassword) {
         await insertUpdateDelete(adminClient, table, payloadFactory());
       }
       pass("test all CRUD operations", `${crudCases.length} CMS modules`);
+    });
+
+    await runStep("test public CMS update flow", async () => {
+      const { data: hero, error: heroReadError } = await adminClient.from("hero_sections").select("*").eq("page_key", "home").single();
+      if (heroReadError) throw heroReadError;
+      const heroTitle = `CMS Hero Verification ${runId}`;
+      let error = (await adminClient.from("hero_sections").update({ title: heroTitle }).eq("id", hero.id)).error;
+      if (error) throw error;
+      let rows = await publicRow("hero_sections", "page_key", "home");
+      if (!rows.some((row) => row.title === heroTitle)) throw new Error("Hero edit was not visible through public CMS read.");
+      error = (await adminClient.from("hero_sections").update({ title: hero.title }).eq("id", hero.id)).error;
+      if (error) throw error;
+
+      const serviceSlug = `verification-service-${runId}`;
+      const { data: service, error: serviceCreateError } = await adminClient.from("services").insert({
+        title: "Verification Visible Service",
+        slug: serviceSlug,
+        nav_label: "Verification Service",
+        summary: "Temporary visible service for CMS verification.",
+        body: "Temporary visible service for CMS verification.",
+        image_url: "/images/solglow-hero.png",
+        icon: "QA",
+        benefits: ["Visible in CMS"],
+        faqs: [],
+        is_published: true
+      }).select().single();
+      if (serviceCreateError) throw serviceCreateError;
+      rows = await publicRow("services", "slug", serviceSlug);
+      if (!rows.length) throw new Error("Published service was not visible through public CMS read.");
+      error = (await adminClient.from("services").delete().eq("id", service.id)).error;
+      if (error) throw error;
+
+      const { data: testimonial, error: testimonialCreateError } = await adminClient.from("testimonials").insert({
+        title: "Verification Testimonial",
+        customer_name: `Verification Customer ${runId}`,
+        quote: "Temporary testimonial for delete verification.",
+        rating: 5,
+        is_published: true
+      }).select().single();
+      if (testimonialCreateError) throw testimonialCreateError;
+      rows = await publicRow("testimonials", "id", testimonial.id);
+      if (!rows.length) throw new Error("Published testimonial was not visible before delete.");
+      error = (await adminClient.from("testimonials").delete().eq("id", testimonial.id)).error;
+      if (error) throw error;
+      rows = await publicRow("testimonials", "id", testimonial.id);
+      if (rows.length) throw new Error("Deleted testimonial remained visible through public CMS read.");
+
+      const { data: contact, error: contactReadError } = await adminClient.from("contact_details").select("*").eq("key", "mobile").single();
+      if (contactReadError) throw contactReadError;
+      const contactValue = `99999${String(runId).slice(-5)}`;
+      error = (await adminClient.from("contact_details").update({ value: contactValue }).eq("id", contact.id)).error;
+      if (error) throw error;
+      rows = await publicRow("contact_details", "key", "mobile");
+      if (!rows.some((row) => row.value === contactValue)) throw new Error("Contact edit was not visible through public CMS read.");
+      error = (await adminClient.from("contact_details").update({ value: contact.value }).eq("id", contact.id)).error;
+      if (error) throw error;
+
+      const { data: seo, error: seoReadError } = await adminClient.from("seo_settings").select("*").eq("page_key", "home").single();
+      if (seoReadError) throw seoReadError;
+      const seoTitle = `CMS SEO Verification ${runId}`;
+      error = (await adminClient.from("seo_settings").update({ meta_title: seoTitle }).eq("id", seo.id)).error;
+      if (error) throw error;
+      rows = await publicRow("seo_settings", "page_key", "home");
+      if (!rows.some((row) => row.meta_title === seoTitle)) throw new Error("SEO edit was not visible through public CMS read.");
+      error = (await adminClient.from("seo_settings").update({ meta_title: seo.meta_title }).eq("id", seo.id)).error;
+      if (error) throw error;
+
+      pass("test public CMS update flow", "hero/service/testimonial/contact/SEO");
     });
 
     await runStep("test enquiry status updates", async () => {

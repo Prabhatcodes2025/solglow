@@ -37,14 +37,94 @@ if (!serviceRole) {
 }
 
 const services = [
-  ["residential-solar", "Residential Solar Rooftop Solutions", "Residential Solar", "Solar for premium homes", "/images/project-residential.png"],
-  ["commercial-solar", "Commercial Solar Rooftop Solutions", "Commercial Solar", "Solar for business spaces", "/images/project-commercial.png"],
-  ["industrial-solar", "Industrial Solar Rooftop Solutions", "Industrial Solar", "Solar for heavy energy users", "/images/solglow-hero.png"],
-  ["on-grid-solar-plants", "On-Grid Solar Power Plants", "On-Grid Plants", "Grid-connected performance", "/images/service-on-grid.png"],
-  ["off-grid-solar-plants", "Off-Grid Solar Power Plants", "Off-Grid Plants", "Independent energy systems", "/images/service-off-grid.png"],
-  ["solar-water-heaters", "Solar Water Heaters", "Water Heaters", "Solar thermal efficiency", "/images/service-water-heater.png"],
-  ["solar-street-lights", "Solar Street Lights", "Street Lights", "Clean outdoor lighting", "/images/service-street-lights.png"],
-  ["backup-solutions-batteries", "Backup Solutions & Batteries", "Backup & Batteries", "Reliable power continuity", "/images/service-off-grid.png"]
+  {
+    slug: "residential-solar",
+    title: "Residential Solar Rooftop Solutions",
+    nav_label: "Residential Solar",
+    eyebrow: "Solar for premium homes",
+    image_url: "/images/project-residential.png",
+    summary: "Elegant rooftop solar systems for families who want lower monthly power bills, cleaner energy and dependable support from consultation to maintenance.",
+    body: "Solglow designs residential solar around your roof, power usage and savings goal. The result is a clean, durable and low-maintenance solar system that blends with modern homes while delivering practical long-term value.",
+    benefits: ["Customized rooftop sizing", "Net-metering focused guidance", "Premium panels and components", "Clean cable routing and installation", "Support for long-term performance", "Ideal for independent homes and villas"],
+    metadata: { applications: ["Independent homes", "Villas", "Apartments common loads", "Home offices"], metrics: [["Lower", "monthly bills"], ["Clean", "renewable power"], ["Smart", "roof planning"]], processNote: "We assess roof direction, shadow patterns, daily consumption and future load growth before recommending the right residential solar configuration." }
+  },
+  {
+    slug: "commercial-solar",
+    title: "Commercial Solar Rooftop Solutions",
+    nav_label: "Commercial Solar",
+    eyebrow: "Solar for business spaces",
+    image_url: "/images/project-commercial.png",
+    summary: "Conversion-focused commercial solar for offices, showrooms, institutions and retail spaces that need measurable energy savings and a professional installation experience.",
+    body: "Commercial energy costs directly affect operating margins. Solglow helps businesses use idle rooftop space to generate clean power, reduce grid dependency and create a stronger sustainability profile.",
+    benefits: ["Consumption-based system design", "Rooftop utilization planning", "Professional installation workflow", "Scalable system architecture", "Reliable post-installation support", "Ideal for retail and office energy loads"],
+    metadata: { applications: ["Offices", "Showrooms", "Schools and institutions", "Hospitality and retail"], metrics: [["Better", "operating savings"], ["Smart", "load planning"], ["Clean", "brand impact"]], processNote: "We align system capacity with business hours, sanctioned load, billing pattern and long-term expansion needs." }
+  },
+  {
+    slug: "industrial-solar",
+    title: "Industrial Solar Rooftop Solutions",
+    nav_label: "Industrial Solar",
+    eyebrow: "Solar for heavy energy users",
+    image_url: "/images/solglow-hero.png",
+    summary: "Robust solar infrastructure for factories, warehouses and industrial facilities where uptime, safety, scalability and long-term energy economics matter.",
+    body: "Industrial solar requires disciplined planning. Solglow approaches every project with attention to roof structure, consumption profile, safety, installation sequencing and long-term return.",
+    benefits: ["High-consumption energy analysis", "Factory and warehouse rooftop planning", "Scalable solar plant architecture", "Quality product selection", "Installation coordination", "Performance and maintenance focus"],
+    metadata: { applications: ["Factories", "Warehouses", "Manufacturing units", "Industrial campuses"], metrics: [["High", "load planning"], ["Robust", "execution"], ["Long", "term ROI"]], processNote: "We map peak loads, roof zones, access paths and safety requirements so the system is practical for industrial environments." }
+  },
+  {
+    slug: "on-grid-solar-plants",
+    title: "On-Grid Solar Power Plants",
+    nav_label: "On-Grid Plants",
+    eyebrow: "Grid-connected performance",
+    image_url: "/images/service-on-grid.png",
+    summary: "Grid-connected solar power plants planned for reliable generation, efficient energy offset and a professional path toward lower electricity costs.",
+    body: "On-grid solar is ideal when customers want to reduce grid electricity usage while staying connected to the utility network. Solglow helps plan system size, components and execution with a performance-first mindset.",
+    benefits: ["Grid-tied solar planning", "Inverter and component guidance", "Energy offset strategy", "Suitable for homes and businesses", "Premium installation approach", "Support for long-term generation"],
+    metadata: { applications: ["Homes with grid access", "Commercial rooftops", "Institutions", "Industrial buildings"], metrics: [["Grid", "connected"], ["Smart", "energy offset"], ["ROI", "focused"]], processNote: "We review consumption, roof area, grid connection and expected generation so the plant is sized with financial practicality." }
+  },
+  {
+    slug: "off-grid-solar-plants",
+    title: "Off-Grid Solar Power Plants",
+    nav_label: "Off-Grid Plants",
+    eyebrow: "Independent energy systems",
+    image_url: "/images/service-off-grid.png",
+    summary: "Independent solar power systems with storage support for locations that need reliable energy beyond conventional grid dependency.",
+    body: "Off-grid solar is about resilience. Solglow plans solar generation, battery backup and power conditioning around the real usage pattern of remote homes, facilities and special applications.",
+    benefits: ["Solar plus storage planning", "Remote-site suitability", "Backup autonomy guidance", "Battery and inverter coordination", "Reliable system architecture", "Support for critical loads"],
+    metadata: { applications: ["Remote homes", "Farms", "Facilities with unreliable grid", "Special power applications"], metrics: [["Energy", "independence"], ["Storage", "ready"], ["Resilient", "power"]], processNote: "We identify critical loads, backup hours, battery requirements and available solar exposure before proposing an off-grid system." }
+  },
+  {
+    slug: "solar-water-heaters",
+    title: "Solar Water Heaters",
+    nav_label: "Water Heaters",
+    eyebrow: "Solar thermal efficiency",
+    image_url: "/images/service-water-heater.png",
+    summary: "Efficient solar water heating systems for homes, apartments and businesses that want to reduce energy used for daily hot-water demand.",
+    body: "Solar water heaters are practical, proven and energy-saving. Solglow helps customers select the right capacity and installation approach based on usage, roof placement and durability expectations.",
+    benefits: ["Hot-water demand assessment", "Capacity selection support", "Durable system options", "Clean rooftop installation", "Energy-saving operation", "Suitable for homes and hospitality"],
+    metadata: { applications: ["Homes", "Apartments", "Hotels", "Hostels and institutions"], metrics: [["Lower", "heating cost"], ["Daily", "hot water"], ["Low", "maintenance"]], processNote: "We calculate hot-water demand, roof placement and usage pattern so the heater capacity is practical and efficient." }
+  },
+  {
+    slug: "solar-street-lights",
+    title: "Solar Street Lights",
+    nav_label: "Street Lights",
+    eyebrow: "Clean outdoor lighting",
+    image_url: "/images/service-street-lights.png",
+    summary: "Smart solar street lighting for campuses, roads, communities and commercial spaces that need reliable night lighting with clean energy.",
+    body: "Solar street lights improve safety and visibility without heavy cabling dependency. Solglow plans pole placement, illumination coverage and product selection for dependable outdoor use.",
+    benefits: ["Lighting layout planning", "Pole and fixture guidance", "Independent solar operation", "Suitable for roads and campuses", "Reliable night-time illumination", "Low operating cost"],
+    metadata: { applications: ["Private roads", "Campuses", "Residential communities", "Commercial premises"], metrics: [["Smart", "outdoor light"], ["Solar", "powered"], ["Safe", "campuses"]], processNote: "We review site length, illumination needs, pole spacing and battery autonomy to build a reliable lighting plan." }
+  },
+  {
+    slug: "backup-solutions-batteries",
+    title: "Backup Solutions & Batteries",
+    nav_label: "Backup & Batteries",
+    eyebrow: "Reliable power continuity",
+    image_url: "/images/service-off-grid.png",
+    summary: "Backup systems and batteries designed to improve energy resilience for homes, offices and business-critical loads.",
+    body: "A backup system should match real usage, not guesswork. Solglow helps identify critical loads, backup duration, battery type and solar-ready options for dependable continuity.",
+    benefits: ["Critical-load assessment", "Battery selection guidance", "Solar-ready storage planning", "Inverter and backup coordination", "Dependable installation approach", "Support and maintenance focus"],
+    metadata: { applications: ["Homes", "Offices", "Small businesses", "Critical backup needs"], metrics: [["Power", "continuity"], ["Battery", "planning"], ["Critical", "loads"]], processNote: "We define what must stay powered, for how long, and how the backup system should integrate with solar or grid supply." }
+  }
 ];
 
 const faqs = [
@@ -55,6 +135,17 @@ const faqs = [
   ["why-solar", "Is solar only for high electricity users?", "No. Solar can support homes, shops, offices, institutions and industrial users when the system is sized around actual consumption."],
   ["contact", "What should I share before a callback?", "Share your location, approximate electricity bill, roof or site type, preferred service and whether savings or backup is the priority."]
 ];
+
+const serviceIcons = {
+  "residential-solar": "SUN",
+  "commercial-solar": "COM",
+  "industrial-solar": "IND",
+  "on-grid-solar-plants": "GRID",
+  "off-grid-solar-plants": "OFF",
+  "solar-water-heaters": "HOT",
+  "solar-street-lights": "LUX",
+  "backup-solutions-batteries": "BAT"
+};
 
 async function upsert(table, row, onConflict) {
   const { error } = await supabase.from(table).upsert(row, { onConflict }).select("id").single();
@@ -93,6 +184,10 @@ await upsert("homepage_sections", {
   subtitle: "Brand promise",
   body: "Solglow Power Solutions Pvt Ltd helps residential, commercial and industrial customers move from high electricity costs to clean, reliable and intelligently planned solar power.",
   image_url: "/images/solglow-mark.png",
+  cta_label: "Consult. Design. Install. Support.",
+  metadata: {
+    supportingText: "Every recommendation is shaped by site conditions, consumption pattern, customer goals and support expectations. The experience is built to feel premium, transparent and conversion-friendly from the first enquiry."
+  },
   is_published: true
 }, "slug");
 
@@ -102,22 +197,33 @@ await upsert("about_sections", {
   subtitle: "Who we are",
   body: "Solglow delivers residential, commercial and industrial solar rooftop solutions, on-grid and off-grid solar power plants, solar water heaters, solar street lights, backup solutions and batteries.",
   image_url: "/images/project-commercial.png",
+  metadata: {
+    positioning: "The company is positioned around practical consultation, customized system design, quality product selection, reliable installation and long-term support. The goal is simple: help customers make a confident clean-energy investment.",
+    proof: "With a dedicated 25+ member team, 800+ projects delivered and landmark work such as the 180 kW IOCL Parippalli solar project, Solglow brings both technical discipline and regional service reach to Kerala customers.",
+    pillars: ["Professional Solar Consultation", "Customized System Design", "Quality Products", "Reliable Installation", "Long-Term Support", "Energy Saving Focus"]
+  },
   is_published: true
 }, "slug");
 
-for (const [slug, title, nav_label, eyebrow, image_url] of services) {
+let serviceIndex = 0;
+for (const service of services) {
   await upsert("services", {
-    slug,
-    title,
-    nav_label,
-    eyebrow,
-    image_url,
-    summary: `${title} planned around real site performance, quality components, safe installation and long-term support.`,
-    body: "Solglow reviews usage pattern, site condition, available space, support expectations and future expansion before recommending a configuration.",
-    benefits: ["Customized planning", "Quality products", "Reliable installation", "Long-term support"],
-    faqs: [{ question: `Who is ${title.toLowerCase()} best for?`, answer: "Customers who want a practical, reliable clean-energy solution designed around real site conditions." }],
+    ...service,
+    icon: serviceIcons[service.slug],
+    faqs: [{ question: `Who is ${service.title.toLowerCase()} best for?`, answer: "Customers who want a practical, reliable clean-energy solution designed around real site conditions." }],
+    sort_order: serviceIndex,
     is_published: true
   }, "slug");
+  await upsert("hero_sections", {
+    page_key: service.slug,
+    title: service.title,
+    eyebrow: service.eyebrow,
+    subtitle: service.summary,
+    image_url: service.image_url,
+    is_published: true,
+    sort_order: 20 + serviceIndex
+  }, "page_key");
+  serviceIndex += 1;
 }
 
 for (const [title, project_type, image_url] of [
@@ -132,6 +238,27 @@ for (const [title, project_type, image_url] of [
 for (const [page_key, title, answer] of faqs) {
   await insertIfMissing("faqs", { page_key, title }, { page_key, title, answer, is_published: true });
 }
+
+for (const testimonial of [
+  {
+    title: "Residential customer",
+    customer_name: "Residential Customer",
+    company: "Kochi",
+    quote: "Solglow made the solar decision clear from consultation to installation. The team explained the system, savings path and support expectations professionally.",
+    rating: 5,
+    sort_order: 0,
+    is_published: true
+  },
+  {
+    title: "Commercial customer",
+    customer_name: "Commercial Customer",
+    company: "Kerala",
+    quote: "The project approach felt structured and dependable. Site assessment, system planning and execution were handled with a premium service mindset.",
+    rating: 5,
+    sort_order: 1,
+    is_published: true
+  }
+]) await insertIfMissing("testimonials", { title: testimonial.title, customer_name: testimonial.customer_name }, testimonial);
 
 for (const [key, title, value] of [
   ["company", "Company", "Solglow Power Solutions Pvt Ltd"],

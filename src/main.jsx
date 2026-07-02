@@ -149,6 +149,24 @@ const process = ["Consultation", "Site Survey", "System Design", "Installation",
 const why = ["Professional Solar Consultation", "Customized System Design", "Quality Products", "Reliable Installation", "Long-Term Support", "Energy Saving Focus"];
 const benefits = ["Reduce electricity bills", "Clean renewable energy", "Low maintenance", "Long-term savings", "Better energy independence", "Eco-friendly future"];
 const proofStats = [["25+", "Team members"], ["180 kW", "IOCL Parippalli solar project"], ["800+", "Projects delivered"], ["3", "Kerala branch regions"]];
+const fallbackTestimonials = [
+  {
+    id: "fallback-home-owner",
+    title: "Residential customer",
+    customer_name: "Residential Customer",
+    company: "Kochi",
+    quote: "Solglow made the solar decision clear from consultation to installation. The team explained the system, savings path and support expectations professionally.",
+    rating: 5
+  },
+  {
+    id: "fallback-business",
+    title: "Commercial customer",
+    customer_name: "Commercial Customer",
+    company: "Kerala",
+    quote: "The project approach felt structured and dependable. Site assessment, system planning and execution were handled with a premium service mindset.",
+    rating: 5
+  }
+];
 
 function useContactInfo() {
   const { content } = useCMS();
@@ -491,6 +509,7 @@ function CTA({ openPopup, title = "Ready to reduce your power bills with solar?"
 }
 
 function Home({ openPopup }) {
+  const brandPromise = useCMSRecord("homepage", "slug", "brand-promise");
   return (
     <>
       <Hero
@@ -510,19 +529,19 @@ function Home({ openPopup }) {
         <Counter value={3} label="Customer segments" />
         <Counter value={100} label="Clean energy focus" />
       </section>
-      <Section eyebrow="Brand promise" title="A solar partner that feels professional before, during and after installation.">
+      <Section eyebrow={brandPromise?.subtitle || "Brand promise"} title={brandPromise?.title || "A solar partner that feels professional before, during and after installation."}>
         <div className="agency-panel">
           <div>
-            <p className="lead">Solglow Power Solutions Pvt Ltd helps residential, commercial and industrial customers move from high electricity costs to clean, reliable and intelligently planned solar power.</p>
-            <p>Every recommendation is shaped by site conditions, consumption pattern, customer goals and support expectations. The experience is built to feel premium, transparent and conversion-friendly from the first enquiry.</p>
+            <p className="lead">{brandPromise?.body || "Solglow Power Solutions Pvt Ltd helps residential, commercial and industrial customers move from high electricity costs to clean, reliable and intelligently planned solar power."}</p>
+            <p>{brandPromise?.metadata?.supportingText || "Every recommendation is shaped by site conditions, consumption pattern, customer goals and support expectations. The experience is built to feel premium, transparent and conversion-friendly from the first enquiry."}</p>
           </div>
           <div className="brand-device tilt">
-            <img src="/images/solglow-mark.png" alt="" />
-            <span>Consult. Design. Install. Support.</span>
+            <img src={brandPromise?.image_url || "/images/solglow-mark.png"} alt="" />
+            <span>{brandPromise?.cta_label || "Consult. Design. Install. Support."}</span>
           </div>
         </div>
       </Section>
-      <DynamicSections moduleKey="homepage" />
+      <DynamicSections moduleKey="homepage" exclude={["brand-promise"]} />
       <ServiceShowcase />
       <ProofBand />
       <WhyCards />
@@ -610,6 +629,11 @@ function FAQ({ items, pageKey }) {
   );
 }
 
+function useCMSRecord(moduleKey, keyName, keyValue) {
+  const { content } = useCMS();
+  return content[moduleKey]?.find((item) => item[keyName] === keyValue);
+}
+
 function GalleryPreview() {
   const { content } = useCMS();
   const fallbackItems = [
@@ -660,9 +684,10 @@ function GalleryPreviewSafe() {
   );
 }
 
-function DynamicSections({ moduleKey }) {
+function DynamicSections({ moduleKey, exclude = [] }) {
   const { content } = useCMS();
-  const records = (content[moduleKey] || []).filter((item) => item.title && (item.body || item.image_url));
+  const excluded = new Set(exclude);
+  const records = (content[moduleKey] || []).filter((item) => !excluded.has(item.slug || item.page_key || item.key) && item.title && (item.body || item.image_url));
   if (!records.length) return null;
   return records.map((item) => <Section key={item.id} eyebrow={item.subtitle} title={item.title}>
     <div className="editorial-layout cms-section">
@@ -674,28 +699,29 @@ function DynamicSections({ moduleKey }) {
 
 function Testimonials() {
   const { content } = useCMS();
-  const items = content.testimonials?.filter((item) => item.customer_name && item.quote) || [];
-  if (!items.length) return null;
+  const cmsItems = content.testimonials?.filter((item) => item.customer_name && item.quote) || [];
+  const items = cmsItems.length ? cmsItems : fallbackTestimonials;
   return <Section eyebrow="Customer stories" title="Trusted outcomes, shared by Solglow customers."><div className="faq-grid testimonial-grid">{items.map((item) => <article className="faq-card tilt" key={item.id}>{item.image_url && <img src={item.image_url} alt={item.customer_name} />}<div className="testimonial-stars">Rated {item.rating || 5}/5</div><p>"{item.quote}"</p><h3>{item.customer_name}</h3><span>{item.company}</span></article>)}</div></Section>;
 }
 
 function About({ openPopup }) {
+  const whoWeAre = useCMSRecord("about", "slug", "who-we-are");
   return (
     <>
       <Hero pageKey="about" eyebrow="About Solglow" title="A Kerala-based solar company with a global, premium service mindset." text="Solglow Power Solutions Pvt Ltd helps homes, businesses and industries reduce energy costs and move toward reliable sustainable power." image="/images/project-commercial.png" variant="inner" />
-      <Section eyebrow="Who we are" title="A complete solar solutions partner from Kochi.">
+      <Section eyebrow={whoWeAre?.subtitle || "Who we are"} title={whoWeAre?.title || "A complete solar solutions partner from Kochi."}>
         <div className="editorial-layout">
           <div>
-            <p className="lead">Solglow delivers residential, commercial and industrial solar rooftop solutions, on-grid and off-grid solar power plants, solar water heaters, solar street lights, backup solutions and batteries.</p>
-            <p>The company is positioned around practical consultation, customized system design, quality product selection, reliable installation and long-term support. The goal is simple: help customers make a confident clean-energy investment.</p>
-            <p>With a dedicated 25+ member team, 800+ projects delivered and landmark work such as the 180 kW IOCL Parippalli solar project, Solglow brings both technical discipline and regional service reach to Kerala customers.</p>
+            <p className="lead">{whoWeAre?.body || "Solglow delivers residential, commercial and industrial solar rooftop solutions, on-grid and off-grid solar power plants, solar water heaters, solar street lights, backup solutions and batteries."}</p>
+            <p>{whoWeAre?.metadata?.positioning || "The company is positioned around practical consultation, customized system design, quality product selection, reliable installation and long-term support. The goal is simple: help customers make a confident clean-energy investment."}</p>
+            <p>{whoWeAre?.metadata?.proof || "With a dedicated 25+ member team, 800+ projects delivered and landmark work such as the 180 kW IOCL Parippalli solar project, Solglow brings both technical discipline and regional service reach to Kerala customers."}</p>
           </div>
           <div className="glass-list">
-            {why.map((item) => <span key={item}>{item}</span>)}
+            {(Array.isArray(whoWeAre?.metadata?.pillars) && whoWeAre.metadata.pillars.length ? whoWeAre.metadata.pillars : why).map((item) => <span key={item}>{item}</span>)}
           </div>
         </div>
       </Section>
-      <DynamicSections moduleKey="about" />
+      <DynamicSections moduleKey="about" exclude={["who-we-are"]} />
       <ProofBand />
       <Process />
       <ServiceShowcase />

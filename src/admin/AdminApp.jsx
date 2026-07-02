@@ -9,23 +9,23 @@ import { cmsStatus, isSupabaseConfigured, supabase } from "../lib/supabase";
 import "./admin.css";
 
 const moduleConfig = {
-  homepage: { label: "Homepage", icon: Home, fields: ["title", "slug", "subtitle", "body", "image_url", "cta_label", "cta_url", "sort_order", "is_published"] },
-  heroes: { label: "Hero", icon: PanelTop, fields: ["title", "page_key", "eyebrow", "subtitle", "image_url", "cta_label", "cta_url", "sort_order", "is_published"] },
-  about: { label: "About", icon: Users, fields: ["title", "slug", "subtitle", "body", "image_url", "sort_order", "is_published"] },
-  services: { label: "Services", icon: Zap, fields: ["title", "slug", "nav_label", "eyebrow", "summary", "body", "image_url", "icon", "benefits", "faqs", "cta_label", "cta_url", "sort_order", "is_published"] },
-  projects: { label: "Projects", icon: FolderKanban, fields: ["title", "slug", "project_type", "capacity", "location", "completion_year", "description", "image_url", "gallery", "status", "sort_order", "is_published"] },
-  gallery: { label: "Gallery", icon: Image, fields: ["title", "category", "image_url", "alt_text", "description", "sort_order", "is_published"] },
-  testimonials: { label: "Testimonials", icon: MessageSquareQuote, fields: ["title", "customer_name", "company", "quote", "rating", "image_url", "sort_order", "is_published"] },
-  faq: { label: "FAQ", icon: CircleHelp, fields: ["title", "page_key", "answer", "sort_order", "is_published"] },
-  contact: { label: "Contact Details", icon: Settings, fields: ["title", "key", "value", "sort_order", "is_published"] },
-  social: { label: "Social Links", icon: Share2, fields: ["title", "platform", "url", "icon", "sort_order", "is_published"] },
-  seo: { label: "SEO Settings", icon: BarChart3, fields: ["title", "page_key", "meta_title", "meta_description", "canonical_url", "og_image", "schema_json", "sort_order", "is_published"] }
+  homepage: { label: "Homepage", icon: Home, fields: ["title", "slug", "subtitle", "body", "image_url", "cta_label", "cta_url", "metadata", "sort_order", "is_published"] },
+  heroes: { label: "Hero", icon: PanelTop, fields: ["title", "page_key", "eyebrow", "subtitle", "image_url", "cta_label", "cta_url", "metadata", "sort_order", "is_published"] },
+  about: { label: "About", icon: Users, fields: ["title", "slug", "subtitle", "body", "image_url", "metadata", "sort_order", "is_published"] },
+  services: { label: "Services", icon: Zap, fields: ["title", "slug", "nav_label", "eyebrow", "summary", "body", "image_url", "icon", "benefits", "faqs", "cta_label", "cta_url", "metadata", "sort_order", "is_published"] },
+  projects: { label: "Projects", icon: FolderKanban, fields: ["title", "slug", "project_type", "capacity", "location", "completion_year", "description", "image_url", "gallery", "status", "metadata", "sort_order", "is_published"] },
+  gallery: { label: "Gallery", icon: Image, fields: ["title", "category", "image_url", "alt_text", "description", "metadata", "sort_order", "is_published"] },
+  testimonials: { label: "Testimonials", icon: MessageSquareQuote, fields: ["title", "customer_name", "company", "quote", "rating", "image_url", "metadata", "sort_order", "is_published"] },
+  faq: { label: "FAQ", icon: CircleHelp, fields: ["title", "page_key", "answer", "metadata", "sort_order", "is_published"] },
+  contact: { label: "Contact Details", icon: Settings, fields: ["title", "key", "value", "metadata", "sort_order", "is_published"] },
+  social: { label: "Social Links", icon: Share2, fields: ["title", "platform", "url", "icon", "metadata", "sort_order", "is_published"] },
+  seo: { label: "SEO Settings", icon: BarChart3, fields: ["title", "page_key", "meta_title", "meta_description", "canonical_url", "og_image", "schema_json", "metadata", "sort_order", "is_published"] }
 };
 
 const jsonFields = new Set(["benefits", "faqs", "gallery", "schema_json", "metadata"]);
 const multilineFields = new Set(["body", "summary", "description", "quote", "answer", "meta_description", ...jsonFields]);
 const mediaFields = new Set(["image_url", "og_image"]);
-const emptyRow = (fields) => Object.fromEntries(fields.map((field) => [field, field === "is_published" ? true : field === "sort_order" ? 0 : field === "schema_json" ? "{}" : jsonFields.has(field) ? "[]" : ""]));
+const emptyRow = (fields) => Object.fromEntries(fields.map((field) => [field, field === "is_published" ? true : field === "sort_order" ? 0 : ["schema_json", "metadata"].includes(field) ? "{}" : jsonFields.has(field) ? "[]" : ""]));
 const titleize = (value) => value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 const enquiryStatuses = [
   ["new", "New"],
